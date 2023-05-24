@@ -8,5 +8,10 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "excel": "^1.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "type": "module"
 }
