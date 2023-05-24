@@ -1,10 +1,11 @@
 import XLSX from "xlsx";
 import path from "path";
 import makeFile from "./write.answer.files.js";
+import deleteAllFiles from "./delete.answer.files.js";
 const __dirname = path.resolve();
 function loadData() {
   try {
-    console.log(__dirname);
+    deleteAllFiles();
     let workbook = XLSX.readFile(__dirname + `/../src/test2.xlsx`);
     let worksheet = workbook.Sheets[`설문지 응답 시트1`];
     var df = XLSX.utils.sheet_to_json(worksheet);
