@@ -13,11 +13,8 @@ export function score(language, code, argsArr, answers) {
   if (language !== "javascript" && language !== "java")
     throw new Error("지원하지 않는 언어입니다");
 
-  return matchResultsWithAnswers(
-    (language === "javascript" ? executeJSOnEachArgs : executeJAVAOnEachArgs)(
-      code,
-      argsArr
-    ),
-    answers
-  );
+  const targetAlgorithm =
+    language === "javascript" ? executeJSOnEachArgs : executeJAVAOnEachArgs;
+
+  return matchResultsWithAnswers(targetAlgorithm(code, argsArr), answers);
 }
