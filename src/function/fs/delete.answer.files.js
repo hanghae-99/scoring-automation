@@ -1,6 +1,5 @@
 import path from "path";
 import fs from "fs";
-const __dirname = path.resolve();
 function deleteFilesInDirectory(folderPath) {
   if (!fs.existsSync(folderPath)) {
     console.log("폴더가 존재하지 않습니다.");
@@ -17,10 +16,9 @@ function deleteFilesInDirectory(folderPath) {
     console.log(`파일 "${filePath}"이(가) 삭제되었습니다.`);
   });
 }
-function deleteAllFiles() {
-  let folderPath = __dirname + "/../output/js";
-  deleteFilesInDirectory(folderPath);
-  folderPath = __dirname + "/../output/java";
-  deleteFilesInDirectory(folderPath);
+function deleteAllFiles(answerPath, deleteAfter) {
+  deleteAfter &&
+    (deleteFilesInDirectory(answerPath + "/js"),
+    deleteFilesInDirectory(answerPath + "/java"));
 }
 export default deleteAllFiles;

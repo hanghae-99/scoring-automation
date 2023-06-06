@@ -1,25 +1,21 @@
-import path from "path";
 import fs from "fs";
-const __dirname = path.resolve();
 
-function makeFile(name, speciality, no, content) {
+function makeFile(name, speciality, no, content, answerPath) {
   try {
-    console.log(__dirname);
-    let filePath = `${__dirname}/../output/`;
     let fileName = "";
-    fs.mkdirSync(filePath, { recursive: true }); // 경로의 디렉토리를 생성합니다.
-    fs.mkdirSync(filePath + "java", { recursive: true }); // java directory
-    fs.mkdirSync(filePath + "js", { recursive: true }); // js directory
+    fs.mkdirSync(answerPath, { recursive: true }); // 경로의 디렉토리를 생성합니다.
+    fs.mkdirSync(answerPath + "/java", { recursive: true }); // java directory
+    fs.mkdirSync(answerPath + "/js", { recursive: true }); // js directory
 
     if (speciality == "Spring") {
-      filePath += "java/";
+      answerPath += "/java/";
       fileName += `${name}_${speciality}_${no}.java`;
     } else {
-      filePath += "js/";
+      answerPath += "/js/";
       fileName += `${name}_${speciality}_${no}.js`;
     }
 
-    fs.writeFile(filePath + fileName, content, "utf8", (err) => {
+    fs.writeFile(answerPath + fileName, content, "utf8", (err) => {
       console.log(`파일 "${fileName}"이(가) 생성되었습니다.`);
     });
   } catch (err) {

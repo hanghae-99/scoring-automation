@@ -1,19 +1,14 @@
-import path from "path";
 import fs from "fs";
-const __dirname = path.resolve();
 
-function deleteFile(speciality, name) {
+function deleteFile(speciality, fileName, answerPath) {
   try {
-    let filePath = `${__dirname}/../output/`;
-    let fileName = name;
-    console.log(fileName);
     if (speciality == "Spring") {
-      filePath += "java/";
+      answerPath += "/java/";
     } else {
-      filePath += "js/";
+      answerPath += "/js/";
     }
 
-    fs.unlink(filePath + fileName, (err) => {
+    fs.unlink(answerPath + fileName, (err) => {
       console.log(`파일 "${fileName}"이(가) 삭제되었습니다.`);
     });
   } catch (err) {
