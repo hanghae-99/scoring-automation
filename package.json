@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "excel": "^1.0.1",
+    "write-excel-file": "^1.4.26",
     "xlsx": "^0.18.5"
   },
   "type": "module"
