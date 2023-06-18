@@ -1,8 +1,14 @@
+import { Injectable } from '@nestjs/common';
 import { Specialized } from '../types';
-import { Script } from 'node:vm';
-import { defaultContext, defaultRunInContextOption } from './resource/config';
+import { JavaService } from './language/java.service';
+import { JavascriptService } from './language/js.service';
 
+@Injectable()
 export class ScoreService {
+  constructor(
+    private readonly JSService: JavascriptService,
+    private readonly JavaService: JavaService,
+  ) {}
   public score(
     specialized: Specialized,
     code: string,
@@ -18,8 +24,8 @@ export class ScoreService {
 
     const targetAlgorithm =
       specialized === 'Spring'
-        ? this.executeJAVAOnEachArgs
-        : this.executeJSOnEachArgs;
+        ? this.JavaService.executeJAVAOnEachArgs
+        : this.JSService.executeJSOnEachArgs;
 
     return this.matchResultsWithAnswers(
       targetAlgorithm(code, argsArr),
@@ -35,24 +41,4 @@ export class ScoreService {
 
     return Math.floor((correctAnswers / answers.length) * 100);
   }
-
-  private executeJAVAOnEachArgs = (userCode: string, argsArr: any[][]) =>
-    [] as any[];
-
-  private executeJSOnEachArgs = (userCode: string, argsArr: any[][]) => {
-    try {
-      new Script(userCode);
-    } catch (e) {
-      if (e instanceof SyntaxError) throw new Error('문법이 정확하지 않습니다');
-      throw e;
-    }
-
-    return argsArr.map(this.executeJSOnArgs(userCode));
-  };
-
-  private executeJSOnArgs = (userCode: string) => (args: any[]) =>
-    new Script(`(${userCode}).apply(null, args)`).runInNewContext(
-      { ...defaultContext, args },
-      defaultRunInContextOption,
-    );
 }

@@ -4,6 +4,8 @@ import { CommandDiscoveryService } from './command/cmd.discovery.service';
 import { XlsxService } from './xlsx/xlsx.service';
 import { ScoreService } from './score/score.service';
 import { CommandService } from './command/cmd.service';
+import { JavaService } from './score/language/java.service';
+import { JavascriptService } from './score/language/js.service';
 
 @Module({
   imports: [DiscoveryModule],
@@ -12,6 +14,8 @@ import { CommandService } from './command/cmd.service';
     CommandService,
     ScoreService,
     XlsxService,
+    JavaService,
+    JavascriptService,
   ],
 })
 export class ScoreModule {}
