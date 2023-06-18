@@ -41,7 +41,6 @@ export class CommandDiscoveryService implements OnModuleInit {
                       transform.transform(this.PARSED_OPTS, {
                         type: 'custom',
                       }),
-
                     this.PARSED_OPTS,
                   )
                 : this.PARSED_OPTS;
