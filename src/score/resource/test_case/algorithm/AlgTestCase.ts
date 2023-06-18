@@ -1,3 +1,5 @@
+const question_1 = ['스파르타', '항해99', '개발자'];
+
 export const algTestCase: {
   questions: {
     [K in string]: {
@@ -8,8 +10,8 @@ export const algTestCase: {
 } = {
   questions: {
     1: {
-      argsArr: [["스파르타"], ["항해99"], ["개발자"]],
-      correctAnswers: ["hello, 스파르타", "hello, 항해99", "hello, 개발자"],
+      argsArr: question_1.map((w) => [w]),
+      correctAnswers: question_1.map((w) => `hello, ${w}`),
     },
     2: {
       argsArr: [],
