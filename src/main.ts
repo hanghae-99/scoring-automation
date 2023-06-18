@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { ScoreModule } from './score.module';
+import { ScoreModule } from './cli.module';
 
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(ScoreModule);
+  await NestFactory.createApplicationContext(ScoreModule);
 }
 void bootstrap();

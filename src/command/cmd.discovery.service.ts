@@ -1,31 +1,13 @@
-import {
-  Injectable,
-  OnModuleInit,
-  PipeTransform,
-  SetMetadata,
-  applyDecorators,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, PipeTransform } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+import { RUN, TRANSFORM, UNDER_COMMAND } from './cmd.symbol';
+import { CLI_OPTIONS } from './cmd.options';
 import 'reflect-metadata';
 
-const RUN = Symbol('RUN');
-const UNDER_COMMAND = Symbol('UNDER_COMMAND');
-const TRANSFORM = Symbol('TRANSFORM');
-
-export const Transform = (...validators: PipeTransform[]) =>
-  applyDecorators(SetMetadata(TRANSFORM, validators));
-export const Run = applyDecorators(SetMetadata(RUN, true));
-export const UnderCommand = applyDecorators(SetMetadata(UNDER_COMMAND, true));
-export const Command =
-  (...cmdArgs: string[]) =>
-  (target: Object, methodName: string | symbol, _parameterIndex: number) => {
-    Reflect.defineMetadata(methodName, cmdArgs, target);
-  };
-
-export const Cmd = Command;
-
 @Injectable()
-export class CommandService implements OnModuleInit {
+export class CommandDiscoveryService implements OnModuleInit {
+  private readonly PARSED_OPTS = CLI_OPTIONS;
+
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly scanner: MetadataScanner,
@@ -53,18 +35,16 @@ export class CommandService implements OnModuleInit {
                 instance[methodName],
               );
 
-              // replace with commander opts
-              const originalArgs = { file: 'example.xlsx', sheet: 'Sheet1' };
               const parsedArgs: any = transforms.length
                 ? transforms.reduce(
                     (_: any, transform: PipeTransform) =>
-                      transform.transform(originalArgs, {
+                      transform.transform(this.PARSED_OPTS, {
                         type: 'custom',
                       }),
 
-                    originalArgs,
+                    this.PARSED_OPTS,
                   )
-                : originalArgs;
+                : this.PARSED_OPTS;
 
               const cmdArgs = this.reflector.get(methodName, instance);
 
