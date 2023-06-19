@@ -1,8 +1,8 @@
-import { Cmd, Run, Transform, UnderCommand } from './cmd.decorator';
-import { CommandValidator } from './cmd.validator';
-import { XlsxService } from '../xlsx/xlsx.service';
-import { ScoreService } from '../score/score.service';
-import { algTestCase } from '../score/resource/test_case/algorithm/AlgTestCase';
+import { Cmd, Run, Transform, UnderCommand } from './command/cmd.decorator';
+import { ArgumentsValidator } from './validator/args.validator';
+import { XlsxService } from './xlsx/xlsx.service';
+import { ScoreService } from './score/score.service';
+import { algTestCase } from './score/resource/test_case/algorithm/AlgTestCase';
 
 @UnderCommand
 export class CommandService {
@@ -12,7 +12,7 @@ export class CommandService {
   ) {}
 
   @Run
-  @Transform(new CommandValidator())
+  @Transform(new ArgumentsValidator())
   async run(
     @Cmd('file', 'sheet', 'test')
     cmd: {

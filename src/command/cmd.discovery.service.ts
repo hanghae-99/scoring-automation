@@ -1,13 +1,12 @@
 import { Injectable, OnModuleInit, PipeTransform } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { RUN, TRANSFORM, UNDER_COMMAND } from './cmd.symbol';
-import { CLI_OPTIONS } from './cmd.options';
+import { COMMAND_MODULE, RUN, TRANSFORM, UNDER_COMMAND } from './cmd.symbol';
 import 'reflect-metadata';
+import { OptionValues } from 'commander';
 
 @Injectable()
 export class CommandDiscoveryService implements OnModuleInit {
-  private readonly PARSED_OPTS = CLI_OPTIONS;
-
+  private PARSED_OPTS: OptionValues;
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly scanner: MetadataScanner,
@@ -15,6 +14,10 @@ export class CommandDiscoveryService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    this.PARSED_OPTS = this.reflector
+      .get(COMMAND_MODULE, CommandDiscoveryService)
+      .opts();
+
     this.discoveryService
       .getProviders()
       .filter(
@@ -47,7 +50,6 @@ export class CommandDiscoveryService implements OnModuleInit {
 
               const cmdArgs = this.reflector.get(methodName, instance);
 
-              // validator와 상관없이 개발자가 입력한 인자들만 받을 수 있도록한다
               const constructedArgs = cmdArgs.reduce(
                 (cmdObj: any, cmdArg: string) => {
                   cmdObj[cmdArg] = parsedArgs[cmdArg];
