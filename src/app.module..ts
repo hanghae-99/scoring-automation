@@ -1,4 +1,3 @@
-import { Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { CommandDiscoveryService } from './command/cmd.discovery.service';
 import { XlsxService } from './xlsx/xlsx.service';
@@ -7,7 +6,7 @@ import { CommandService } from './app.service';
 import { JavaService } from './score/language/java.service';
 import { JavascriptService } from './score/language/js.service';
 import { CommandModule } from './command/cmd.decorator';
-import { program } from 'commander';
+import { scoreCommand } from './score.cmd';
 
 @CommandModule({
   imports: [DiscoveryModule],
@@ -19,10 +18,6 @@ import { program } from 'commander';
     JavaService,
     JavascriptService,
   ],
-  command: program
-    .option('-t, --test <test>', 'test kind')
-    .option('-f, --file <file>', 'xlsx file name')
-    .option('-s, --sheet <sheet>', 'sheet name')
-    .parse(),
+  command: scoreCommand,
 })
 export class AppModule {}
