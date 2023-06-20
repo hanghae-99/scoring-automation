@@ -5,6 +5,9 @@ export type Row = {
   이름: string;
   답안: string;
 };
+export type ScoredRow = Row & {
+  점수: number;
+};
 export type ColumnNames = keyof Row;
 export type AlgorithmOption = {
   delete: boolean;

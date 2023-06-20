@@ -1,8 +1,19 @@
 import { CellValue, Workbook } from 'exceljs';
-import { Row } from '../types';
+import { Row, ScoredRow } from '../types';
 
 export class XlsxService {
-  async readAnswerSheetToRows(file: string, sheet: string): Promise<Row[]> {
+  private readonly scoredColumns: readonly (keyof ScoredRow)[] = [
+    '주특기',
+    '문제',
+    '이름',
+    '답안',
+    '점수',
+  ] as const;
+
+  async readAnswerSheetToRows(
+    file: string,
+    sheet: string,
+  ): Promise<{ answerRows: Row[]; workBook: Workbook }> {
     const wb = new Workbook();
     await wb.xlsx.readFile(file);
 
@@ -29,6 +40,28 @@ export class XlsxService {
       return [...parsed, rowObj];
     }, []);
 
-    return parsed as Row[];
+    return { answerRows: parsed as Row[], workBook: wb };
+  }
+
+  async writeScoreSheetFromRows(
+    workBook: Workbook,
+    scoredRows: ScoredRow[],
+    originalXlsxFileName: string,
+    scoredSheetName: string = '채점결과',
+  ) {
+    if (!scoredRows.length) throw new Error('scored rows is empty');
+
+    const ws = workBook.addWorksheet(scoredSheetName);
+
+    const scoredRowsArr = scoredRows.map((scoredRow) =>
+      this.scoredColumns.reduce(
+        (cellValues, column) => [...cellValues, scoredRow[column]],
+        [],
+      ),
+    );
+
+    ws.addRows([this.scoredColumns, ...scoredRowsArr]);
+
+    return workBook.xlsx.writeFile(originalXlsxFileName);
   }
 }

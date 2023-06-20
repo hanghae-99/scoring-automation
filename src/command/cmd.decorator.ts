@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common';
 import { COMMAND_MODULE, RUN, TRANSFORM, UNDER_COMMAND } from './cmd.symbol';
 import { Command } from 'commander';
-import { CommandDiscoveryService } from './cmd.discovery.service';
+import { CommandService } from './cmd.service';
 
 export const CommandModule = ({
   command,
   ...moduleMetadata
 }: ModuleMetadata & { command: Command }) => {
-  Reflect.defineMetadata(COMMAND_MODULE, command, CommandDiscoveryService);
+  Reflect.defineMetadata(COMMAND_MODULE, command, CommandService);
 
   return applyDecorators(Module(moduleMetadata));
 };

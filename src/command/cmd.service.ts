@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { OptionValues } from 'commander';
 
 @Injectable()
-export class CommandDiscoveryService implements OnModuleInit {
+export class CommandService implements OnModuleInit {
   private PARSED_OPTS: OptionValues;
   constructor(
     private readonly discoveryService: DiscoveryService,
@@ -15,7 +15,7 @@ export class CommandDiscoveryService implements OnModuleInit {
 
   onModuleInit() {
     this.PARSED_OPTS = this.reflector
-      .get(COMMAND_MODULE, CommandDiscoveryService)
+      .get(COMMAND_MODULE, CommandService)
       .opts();
 
     this.discoveryService
