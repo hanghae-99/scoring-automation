@@ -13,9 +13,14 @@ export class JavascriptService {
     return argsArr.map(this.executeJSOnArgs(userCode));
   };
 
-  private executeJSOnArgs = (userCode: string) => (args: any[]) =>
-    new Script(`(${userCode}).apply(null, args)`).runInNewContext(
-      { ...defaultContext, args },
-      defaultRunInContextOption,
-    );
+  private executeJSOnArgs = (userCode: string) => (args: any[]) => {
+    try {
+      return new Script(`(${userCode}).apply(null, args)`).runInNewContext(
+        { ...defaultContext, args },
+        defaultRunInContextOption,
+      );
+    } catch (e) {
+      return e;
+    }
+  };
 }

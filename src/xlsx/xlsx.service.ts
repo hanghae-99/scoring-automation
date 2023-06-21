@@ -1,19 +1,25 @@
 import { CellValue, Workbook } from 'exceljs';
-import { Row, ScoredRow } from '../types';
+import { AlgorithmRow, AlgorithmScoredRow } from '../types';
 
 export class XlsxService {
-  private readonly scoredColumns: readonly (keyof ScoredRow)[] = [
-    '주특기',
-    '문제',
+  private readonly scoredColumns: readonly (keyof AlgorithmScoredRow)[] = [
+    '타임스탬프',
     '이름',
-    '답안',
+    '반',
+    '언어',
+    '1번',
+    '2번',
+    '3번',
+    '문제해설영상',
+    '합격여부',
+    '틀린문제',
     '점수',
   ] as const;
 
   async readAnswerSheetToRows(
     file: string,
     sheet: string,
-  ): Promise<{ answerRows: Row[]; workBook: Workbook }> {
+  ): Promise<{ answerRows: AlgorithmRow[]; workBook: Workbook }> {
     const wb = new Workbook();
     await wb.xlsx.readFile(file);
 
@@ -31,26 +37,25 @@ export class XlsxService {
 
     const parsed = answerRows.reduce<Record<string, any>[]>((parsed, row) => {
       const rowObj = columns.reduce((rowObj, column, i) => {
-        if (!row[i])
-          throw new Error(`빈 셀이 존재합니다. 열: ${column}, 행: ${i + 1}`);
-
         return { ...rowObj, [column as string]: row[i] };
       }, {} as Record<string, any>);
 
-      return [...parsed, rowObj];
+      return !rowObj.이름 ? parsed : [...parsed, rowObj];
     }, []);
 
-    return { answerRows: parsed as Row[], workBook: wb };
+    return { answerRows: parsed as AlgorithmRow[], workBook: wb };
   }
 
   async writeScoreSheetFromRows(
     workBook: Workbook,
-    scoredRows: ScoredRow[],
+    scoredRows: AlgorithmScoredRow[],
     originalXlsxFileName: string,
     scoredSheetName: string = '채점결과',
   ) {
     if (!scoredRows.length) throw new Error('scored rows is empty');
 
+    workBook.getWorksheet(scoredSheetName) &&
+      workBook.removeWorksheet(scoredSheetName);
     const ws = workBook.addWorksheet(scoredSheetName);
 
     const scoredRowsArr = scoredRows.map((scoredRow) =>

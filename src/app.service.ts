@@ -3,7 +3,7 @@ import { ArgumentsValidator } from './validator/args.validator';
 import { XlsxService } from './xlsx/xlsx.service';
 import { ScoreService } from './score/score.service';
 import { algTestCase } from './score/resource/test_case/algorithm/AlgTestCase';
-import { ScoredRow } from './types';
+import { AlgorithmScoredRow } from './types';
 
 @UnderCommand
 export class AppService {
@@ -26,18 +26,46 @@ export class AppService {
       await this.xlsxService.readAnswerSheetToRows(cmd.file, cmd.sheet);
 
     if (cmd.test === 'alg') {
-      const scoredRows: ScoredRow[] = answerRows.map((answerRow) => {
-        const { 주특기, 문제, 답안: 수강생답안 } = answerRow;
-        const { argsArr, correctAnswers } = algTestCase.questions[문제];
+      const scoredRows: AlgorithmScoredRow[] = answerRows.map((answerRow) => {
+        const { 언어 } = answerRow;
 
-        const 점수 = this.scoreService.score(
-          주특기,
-          수강생답안,
-          argsArr,
-          correctAnswers,
+        const scoreAndFailReason = (['1번', '2번', '3번'] as const).reduce(
+          (scoreAndFailReason, question) => {
+            const { argsArr, correctAnswers, point } = algTestCase[question];
+            const 답안 = answerRow[question];
+
+            if (!언어 || !답안) return scoreAndFailReason;
+
+            const score = this.scoreService.score(
+              언어,
+              답안.replace(/&apos;/g, "'"),
+              argsArr,
+              correctAnswers,
+            );
+
+            score === 100
+              ? (scoreAndFailReason.totalScore += point)
+              : scoreAndFailReason.틀린문제.push({
+                  문제: question,
+                  점수: score,
+                });
+
+            return scoreAndFailReason;
+          },
+          {
+            totalScore: 0,
+            틀린문제: [],
+          },
         );
 
-        return { ...answerRow, 점수 };
+        return {
+          ...answerRow,
+          점수: scoreAndFailReason.totalScore,
+          합격여부: scoreAndFailReason.totalScore >= 3,
+          틀린문제: scoreAndFailReason.틀린문제
+            .map((fq) => `문제: ${fq.문제}\n점수: ${fq.점수}`)
+            .join('\n\n'),
+        };
       });
 
       await this.xlsxService.writeScoreSheetFromRows(

@@ -1,14 +1,21 @@
-export type Specialized = 'Spring' | 'React' | 'NodeJS';
-export type Row = {
-  주특기: Specialized;
-  문제: string;
+export type Language = 'Java' | 'JavaScript';
+export type AlgorithmRow = {
+  타임스탬프: string;
   이름: string;
-  답안: string;
+  반: string;
+  언어: Language;
+  문제선택: string;
+  문제해설영상: string;
+  '1번': string;
+  '2번': string;
+  '3번': string;
 };
-export type ScoredRow = Row & {
+export type AlgorithmScoredRow = AlgorithmRow & {
+  합격여부: boolean;
+  틀린문제: string;
   점수: number;
 };
-export type ColumnNames = keyof Row;
+export type AlgorithmColumnNames = keyof AlgorithmRow;
 export type AlgorithmOption = {
   delete: boolean;
   file: string;

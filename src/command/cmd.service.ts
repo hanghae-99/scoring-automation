@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit, PipeTransform } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { COMMAND_MODULE, RUN, TRANSFORM, UNDER_COMMAND } from './cmd.symbol';
-import 'reflect-metadata';
 import { OptionValues } from 'commander';
+import 'reflect-metadata';
 
 @Injectable()
 export class CommandService implements OnModuleInit {

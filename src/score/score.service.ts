@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Specialized } from '../types';
+import { Language } from '../types';
 import { JavaService } from './language/java.service';
 import { JavascriptService } from './language/js.service';
 
@@ -10,20 +10,16 @@ export class ScoreService {
     private readonly JavaService: JavaService,
   ) {}
   public score(
-    specialized: Specialized,
+    language: Language,
     code: string,
     argsArr: any[][],
     answers: any[],
   ) {
-    if (
-      specialized !== 'NodeJS' &&
-      specialized !== 'Spring' &&
-      specialized !== 'React'
-    )
+    if (language !== 'Java' && language !== 'JavaScript')
       throw new Error('주특기를 올바르게 입력해주세요');
 
     const targetAlgorithm =
-      specialized === 'Spring'
+      language === 'Java'
         ? this.JavaService.executeJAVAOnEachArgs
         : this.JSService.executeJSOnEachArgs;
 
