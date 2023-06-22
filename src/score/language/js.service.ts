@@ -6,9 +6,11 @@ export class JavascriptService {
     try {
       new Script(userCode);
     } catch (e) {
-      if (e instanceof SyntaxError)
+      if (e instanceof SyntaxError) {
         console.log(`문법적으로 올바르지 않은 코드: \n${userCode}`);
-      throw new Error(`문법이 정확하지 않습니다`);
+        throw new Error(`문법이 정확하지 않습니다`);
+      }
+
       throw e;
     }
 
