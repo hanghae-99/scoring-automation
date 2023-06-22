@@ -19,11 +19,17 @@ export class JavascriptService {
 
   private executeJSOnArgs = (userCode: string) => (args: any[]) => {
     try {
-      return new Script(`(${userCode}).apply(null, args)`).runInNewContext(
+      return new Script(`${userCode}\n\nsolution(args);`).runInNewContext(
         { ...defaultContext, args },
         defaultRunInContextOption,
       );
     } catch (e) {
+      if (e instanceof ReferenceError) {
+        console.log(
+          `solution 함수가 발견되지 않았습니다. 함수명을 solution으로 제출해주세요. 작성된 코드: ${userCode}`,
+        );
+      }
+
       return e;
     }
   };
