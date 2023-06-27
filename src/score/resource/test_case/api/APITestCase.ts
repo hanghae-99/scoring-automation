@@ -1,1 +1,1 @@
-export const apiTestCase = {};
+export const apiTestCase: any = [];

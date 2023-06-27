@@ -1,25 +1,41 @@
 import { CellValue, Workbook } from 'exceljs';
-import { AlgorithmRow, AlgorithmScoredRow } from '../types';
+import {
+  AlgorithmRow,
+  AlgorithmScoredRow,
+  ApiRow,
+  ApiScoredRow,
+} from '../types';
 
 export class XlsxService {
-  private readonly scoredColumns: readonly (keyof AlgorithmScoredRow)[] = [
-    '타임스탬프',
+  isAlgorithmRows(rows: any[]): rows is AlgorithmRow[] {
+    return !!rows[0].언어;
+  }
+  private readonly scoredAlgorithmColumns: readonly (keyof AlgorithmScoredRow)[] =
+    [
+      '타임스탬프',
+      '이름',
+      '반',
+      '언어',
+      '1번',
+      '2번',
+      '3번',
+      '문제해설영상',
+      '합격여부',
+      '틀린문제',
+      '점수',
+    ] as const;
+  private readonly scoredApiColumns: readonly (keyof ApiScoredRow)[] = [
     '이름',
     '반',
-    '언어',
-    '1번',
-    '2번',
-    '3번',
-    '문제해설영상',
-    '합격여부',
-    '틀린문제',
+    'url',
     '점수',
+    '감점요인',
   ] as const;
 
   async readAnswerSheetToRows(
     file: string,
     sheet: string,
-  ): Promise<{ answerRows: AlgorithmRow[]; workBook: Workbook }> {
+  ): Promise<{ answerRows: AlgorithmRow[] | ApiRow[]; workBook: Workbook }> {
     const wb = new Workbook();
     await wb.xlsx.readFile(file);
 
@@ -32,7 +48,7 @@ export class XlsxService {
       );
 
     const [columns, ...answerRows] = rows
-      .map((r) => r.values as CellValue[])
+      .map((r) => (r.values as any[]).map((v) => (v.text ? v.text : v)))
       .map(([_, ...actual]) => actual);
 
     const parsed = answerRows.reduce<Record<string, any>[]>((parsed, row) => {
@@ -43,12 +59,12 @@ export class XlsxService {
       return !rowObj.이름 ? parsed : [...parsed, rowObj];
     }, []);
 
-    return { answerRows: parsed as AlgorithmRow[], workBook: wb };
+    return { answerRows: parsed as AlgorithmRow[] | ApiRow[], workBook: wb };
   }
 
   async writeScoreSheetFromRows(
     workBook: Workbook,
-    scoredRows: AlgorithmScoredRow[],
+    scoredRows: AlgorithmScoredRow[] | ApiScoredRow[],
     originalXlsxFileName: string,
     scoredSheetName: string = '채점결과',
   ) {
@@ -58,14 +74,25 @@ export class XlsxService {
       workBook.removeWorksheet(scoredSheetName);
     const ws = workBook.addWorksheet(scoredSheetName);
 
-    const scoredRowsArr = scoredRows.map((scoredRow) =>
-      this.scoredColumns.reduce(
-        (cellValues, column) => [...cellValues, scoredRow[column]],
-        [],
-      ),
-    );
+    const scoredRowsArr = this.isAlgorithmRows(scoredRows)
+      ? scoredRows.map((scoredRow) =>
+          this.scoredAlgorithmColumns.reduce(
+            (cellValues, column) => [...cellValues, scoredRow[column]],
+            [],
+          ),
+        )
+      : scoredRows.map((scoredRow) =>
+          this.scoredApiColumns.reduce(
+            (cellValues, column) => [...cellValues, scoredRow[column]],
+            [],
+          ),
+        );
 
-    ws.addRows([this.scoredColumns, ...scoredRowsArr]);
+    const targetColumns = this.isAlgorithmRows(scoredRows)
+      ? this.scoredAlgorithmColumns
+      : this.scoredApiColumns;
+
+    ws.addRows([targetColumns, ...scoredRowsArr]);
 
     return workBook.xlsx.writeFile(originalXlsxFileName);
   }

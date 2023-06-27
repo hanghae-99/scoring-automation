@@ -1,4 +1,9 @@
 export type Language = 'Java' | 'JavaScript';
+type Scored = {
+  합격여부: boolean;
+  틀린문제: string;
+  점수: number;
+};
 export type AlgorithmRow = {
   타임스탬프: string;
   이름: string;
@@ -10,10 +15,16 @@ export type AlgorithmRow = {
   '2번': string;
   '3번': string;
 };
-export type AlgorithmScoredRow = AlgorithmRow & {
-  합격여부: boolean;
-  틀린문제: string;
+
+export type AlgorithmScoredRow = AlgorithmRow & Scored;
+export type ApiRow = {
+  이름: string;
+  반: string;
+  url: string;
+};
+export type ApiScoredRow = ApiRow & {
   점수: number;
+  감점요인: string;
 };
 export type AlgorithmColumnNames = keyof AlgorithmRow;
 export type AlgorithmOption = {

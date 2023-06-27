@@ -3,7 +3,7 @@ import { ArgumentsValidator } from './validator/args.validator';
 import { XlsxService } from './xlsx/xlsx.service';
 import { ScoreService } from './score/score.service';
 import { algTestCase } from './score/resource/test_case/algorithm/AlgTestCase';
-import { AlgorithmScoredRow } from './types';
+import { AlgorithmScoredRow, ApiRow, ApiScoredRow } from './types';
 
 @UnderCommand
 export class AppService {
@@ -25,7 +25,7 @@ export class AppService {
     const { answerRows, workBook } =
       await this.xlsxService.readAnswerSheetToRows(cmd.file, cmd.sheet);
 
-    if (cmd.test === 'alg') {
+    if (cmd.test === 'alg' && this.xlsxService.isAlgorithmRows(answerRows)) {
       const scoredRows: AlgorithmScoredRow[] = answerRows.map((answerRow) => {
         const { 언어 } = answerRow;
 
@@ -36,7 +36,7 @@ export class AppService {
 
             if (!언어 || !답안) return scoreAndFailReason;
 
-            const score = this.scoreService.score(
+            const score = this.scoreService.scoreAlgorithm(
               언어,
               답안.replace(/&apos;/g, "'"),
               argsArr,
@@ -76,6 +76,23 @@ export class AppService {
       );
     }
 
-    if (cmd.test === 'api') throw new Error('Not implemented yet');
+    if (cmd.test === 'api' && !this.xlsxService.isAlgorithmRows(answerRows)) {
+      const scoreAndFailReasons = await Promise.all(
+        answerRows.map((apiRow) => this.scoreService.scoreApi(apiRow.url)),
+      );
+
+      const scoredRows: ApiScoredRow[] = answerRows.map((apiRow, i) => ({
+        ...apiRow,
+        점수: scoreAndFailReasons[i].score,
+        감점요인: scoreAndFailReasons[i].reductionReasons,
+      }));
+
+      await this.xlsxService.writeScoreSheetFromRows(
+        workBook,
+        scoredRows,
+        cmd.file,
+        '채점결과시트',
+      );
+    }
   }
 }
