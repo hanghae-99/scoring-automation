@@ -7,6 +7,7 @@ import { JavaService } from './score/language/java.service';
 import { JavascriptService } from './score/language/js.service';
 import { CommandModule } from './command/cmd.decorator';
 import { scoreCommand } from './score.cmd';
+import { ApiService } from './score/api/api.service';
 
 @CommandModule({
   imports: [DiscoveryModule],
@@ -17,6 +18,7 @@ import { scoreCommand } from './score.cmd';
     XlsxService,
     JavaService,
     JavascriptService,
+    ApiService,
   ],
   command: scoreCommand,
 })
