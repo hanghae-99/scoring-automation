@@ -5,29 +5,29 @@ const LENGTH_0 = Symbol('LENGTH_0');
 
 export class ApiService {
   private readonly userObjectKeys = ['id', 'name', 'email', 'pw'] as const;
-  async getPointToReduceAndTargetUserIdIfExistsOfGetAllMembersApi(
+  async getPointToReduceAndTargetUserIdIfExistsOfGetAllUsersApi(
     url: string,
     tried = 0,
   ): Promise<{
     targetUserId: string | symbol;
-    allMembersPointToReduce: number;
-    allMembersReductionReasons: string[];
+    allUsersPointToReduce: number;
+    allUsersReductionReasons: string[];
   }> {
-    const path = new URL('/member', url).toString();
+    const path = new URL('/user', url).toString();
     const { data: responseBody, status } = await axios.get(path).catch((e) => ({
       data: e.response?.data ?? null,
       status: e.response?.status ?? null,
     }));
 
     if (status >= 400 && tried < 3)
-      return this.getPointToReduceAndTargetUserIdIfExistsOfGetAllMembersApi(
+      return this.getPointToReduceAndTargetUserIdIfExistsOfGetAllUsersApi(
         url,
         tried + 1,
       );
     const responseBodyExists = !!responseBody;
     const isStatus200 = status === 200;
     const isBodyLengthInAllowedRange =
-      responseBody?.length >= 3 && responseBody?.length <= 99;
+      responseBody?.result?.length >= 3 && responseBody?.result?.length <= 99;
     const reductionReasons = [];
 
     !responseBodyExists &&
@@ -47,14 +47,14 @@ export class ApiService {
 
     const isWrongElement =
       responseBodyExists &&
-      Array.isArray(responseBody) &&
-      responseBody.reduce((isWrong: boolean, member: any) => {
+      Array.isArray(responseBody.result) &&
+      responseBody.result.reduce((isWrong: boolean, User: any) => {
         if (isWrong) return isWrong;
 
         return this.userObjectKeys.reduce<boolean>((isWrong, key) => {
           if (isWrong) return isWrong;
 
-          return member[key] ? false : true;
+          return User[key] ? false : true;
         }, false);
       }, false);
 
@@ -63,31 +63,33 @@ export class ApiService {
         '모든 회원 조회의 응답 본문의 각각의 회원 정보에는 id, name, email, pw가 포함되어야 합니다 (1점 감점)',
       );
 
-    const bodyLength = responseBody?.length ?? 0;
+    const bodyLength = responseBody?.result?.length ?? 0;
 
     return {
-      targetUserId: bodyLength ? responseBody[0].id ?? ID_NOT_EXISTS : LENGTH_0,
-      allMembersPointToReduce: responseBodyExists
+      targetUserId: bodyLength
+        ? responseBody.result[0].id ?? ID_NOT_EXISTS
+        : LENGTH_0,
+      allUsersPointToReduce: responseBodyExists
         ? (!isStatus200 ? 1 : 0) +
           (!isBodyLengthInAllowedRange ? 1 : 0) +
           (isWrongElement ? 1 : 0)
         : 3,
-      allMembersReductionReasons: reductionReasons,
+      allUsersReductionReasons: reductionReasons,
     };
   }
 
-  async getPointToReduceOfTargetMemberApi(
+  async getPointToReduceOfTargetUserApi(
     url: string,
     userId: string | symbol,
     tried = 0,
   ): Promise<{
-    targetMemberPointToReduce: number;
-    targetMemberReductionReasons: string[];
+    targetUserPointToReduce: number;
+    targetUserReductionReasons: string[];
   }> {
     if (typeof userId === 'symbol')
       return {
-        targetMemberPointToReduce: 5,
-        targetMemberReductionReasons: [
+        targetUserPointToReduce: 5,
+        targetUserReductionReasons: [
           `${
             userId === LENGTH_0
               ? '응답 본문의 배열이 존재하지 않았거나 배열의 길이가 0입니다'
@@ -96,17 +98,19 @@ export class ApiService {
         ],
       };
 
-    const path = new URL(`/member/${userId}`, url).toString();
+    const path = new URL(`/user/${userId}`, url).toString();
     const { data: responseBody, status } = await axios.get(path).catch((e) => ({
       data: e.response?.data ?? null,
       status: e.response?.status ?? null,
     }));
 
     if (status >= 400 && tried < 3)
-      return this.getPointToReduceOfTargetMemberApi(url, userId, tried + 1);
+      return this.getPointToReduceOfTargetUserApi(url, userId, tried + 1);
 
     const pointToReduce = this.userObjectKeys.reduce((reduction, key) => {
-      return responseBody && responseBody[key] ? reduction : ++reduction;
+      return responseBody?.result && responseBody.result[key]
+        ? reduction
+        : ++reduction;
     }, 0);
     const isStatus200 = status === 200;
     const reductionReasons = [];
@@ -120,17 +124,14 @@ export class ApiService {
       );
     // 총 5점 감점 가능
     return {
-      targetMemberPointToReduce: (!isStatus200 ? 1 : 0) + pointToReduce,
-      targetMemberReductionReasons: reductionReasons,
+      targetUserPointToReduce: (!isStatus200 ? 1 : 0) + pointToReduce,
+      targetUserReductionReasons: reductionReasons,
     };
   }
 
   async getPointToReduceOfExceptionHandling(url: string) {
     const randomString = Math.random().toString(36).substring(4);
-    const expecting_400Path = new URL(
-      `/member/${randomString}`,
-      url,
-    ).toString();
+    const expecting_400Path = new URL(`/User/${randomString}`, url).toString();
 
     const reductionReasons = [];
 

@@ -51,20 +51,13 @@ export class ScoreService {
       };
     }
 
-    const {
-      targetUserId,
-      allMembersPointToReduce,
-      allMembersReductionReasons,
-    } =
-      await this.apiService.getPointToReduceAndTargetUserIdIfExistsOfGetAllMembersApi(
+    const { targetUserId, allUsersPointToReduce, allUsersReductionReasons } =
+      await this.apiService.getPointToReduceAndTargetUserIdIfExistsOfGetAllUsersApi(
         url,
       );
 
-    const { targetMemberPointToReduce, targetMemberReductionReasons } =
-      await this.apiService.getPointToReduceOfTargetMemberApi(
-        url,
-        targetUserId,
-      );
+    const { targetUserPointToReduce, targetUserReductionReasons } =
+      await this.apiService.getPointToReduceOfTargetUserApi(url, targetUserId);
 
     const {
       exceptionHandlingPointToReduce,
@@ -74,11 +67,11 @@ export class ScoreService {
     return {
       score:
         startPoint -
-        (allMembersPointToReduce +
-          targetMemberPointToReduce +
+        (allUsersPointToReduce +
+          targetUserPointToReduce +
           exceptionHandlingPointToReduce),
-      reductionReasons: allMembersReductionReasons
-        .concat(targetMemberReductionReasons)
+      reductionReasons: allUsersReductionReasons
+        .concat(targetUserReductionReasons)
         .concat(exceptionHandlingReductionReasons)
         .join('\n'),
     };
