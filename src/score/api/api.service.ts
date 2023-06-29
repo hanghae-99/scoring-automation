@@ -27,7 +27,7 @@ export class ApiService {
     const responseBodyExists = !!responseBody;
     const isStatus200 = status === 200;
     const isBodyLengthInAllowedRange =
-      responseBody?.result?.length >= 3 && responseBody?.result?.length <= 99;
+      responseBody?.length >= 3 && responseBody?.length <= 99;
     const reductionReasons = [];
 
     !responseBodyExists &&
@@ -47,8 +47,8 @@ export class ApiService {
 
     const isWrongElement =
       responseBodyExists &&
-      Array.isArray(responseBody.result) &&
-      responseBody.result.reduce((isWrong: boolean, User: any) => {
+      Array.isArray(responseBody) &&
+      responseBody.reduce((isWrong: boolean, User: any) => {
         if (isWrong) return isWrong;
 
         return this.userObjectKeys.reduce<boolean>((isWrong, key) => {
@@ -63,12 +63,10 @@ export class ApiService {
         '모든 회원 조회의 응답 본문의 각각의 회원 정보에는 id, name, email, pw가 포함되어야 합니다 (1점 감점)',
       );
 
-    const bodyLength = responseBody?.result?.length ?? 0;
+    const bodyLength = responseBody?.length ?? 0;
 
     return {
-      targetUserId: bodyLength
-        ? responseBody.result[0].id ?? ID_NOT_EXISTS
-        : LENGTH_0,
+      targetUserId: bodyLength ? responseBody[0].id ?? ID_NOT_EXISTS : LENGTH_0,
       allUsersPointToReduce: responseBodyExists
         ? (!isStatus200 ? 1 : 0) +
           (!isBodyLengthInAllowedRange ? 1 : 0) +
@@ -108,9 +106,7 @@ export class ApiService {
       return this.getPointToReduceOfTargetUserApi(url, userId, tried + 1);
 
     const pointToReduce = this.userObjectKeys.reduce((reduction, key) => {
-      return responseBody?.result && responseBody.result[key]
-        ? reduction
-        : ++reduction;
+      return responseBody && responseBody[key] ? reduction : ++reduction;
     }, 0);
     const isStatus200 = status === 200;
     const reductionReasons = [];

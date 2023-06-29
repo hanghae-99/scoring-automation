@@ -28,12 +28,12 @@ async function enableTestServers() {
   /**
    * @server_1 정상 응답 시나리오
    */
-  app.get('/member', async (req, res) => {
+  app.get('/user', async (req, res) => {
     const users = await User.find({}).lean();
-    res.status(200).json(users);
+    res.status(200).json({ result: users });
   });
 
-  app.get('/member/:id', async (req, res) => {
+  app.get('/user/:id', async (req, res) => {
     const { id } = req.params;
     const user = await User.findOne({ id }).lean();
 
@@ -41,7 +41,7 @@ async function enableTestServers() {
       return res.status(400).json({ message: 'user not found' });
     }
 
-    res.status(200).json(user);
+    res.status(200).json({ result: user });
   });
 
   app.listen(3000, () => {
@@ -51,11 +51,13 @@ async function enableTestServers() {
   /**
    * @server_2 부족한 길이의 유저 배열과 잘못된 응답코드
    */
-  app2.get('/member', async (req, res) => {
-    res.status(202).json(await User.find({}, {}, { limit: 2 }).lean());
+  app2.get('/user', async (req, res) => {
+    res
+      .status(202)
+      .json({ result: await User.find({}, {}, { limit: 2 }).lean() });
   });
 
-  app2.get('/member/:id', async (req, res) => {
+  app2.get('/user/:id', async (req, res) => {
     const { id } = req.params;
     const user = await User.findOne({ id }).lean();
 
@@ -63,7 +65,7 @@ async function enableTestServers() {
       return res.status(400).json({ message: 'user not found' });
     }
 
-    res.status(200).json(user);
+    res.status(200).json({ result: user });
   });
 
   app2.listen(3001, () => {
@@ -73,15 +75,15 @@ async function enableTestServers() {
   /**
    * @server_3 부족한 요소가 발견되는 전체 조회와 개인 조회
    */
-  app3.get('/member', async (req, res) => {
+  app3.get('/user', async (req, res) => {
     const users = await User.find({}).lean();
     delete users[0]['email'];
     delete users[0]['pw'];
 
-    res.status(200).json(users);
+    res.status(200).json({ result: users });
   });
 
-  app3.get('/member/:id', async (req, res) => {
+  app3.get('/user/:id', async (req, res) => {
     const { id } = req.params;
     const user = await User.findOne({ id }).lean();
     if (user) {
@@ -93,7 +95,7 @@ async function enableTestServers() {
       return res.status(400).json({ message: 'user not found' });
     }
 
-    res.status(200).json(user);
+    res.status(200).json({ result: user });
   });
 
   app3.listen(3002, () => {
@@ -103,14 +105,14 @@ async function enableTestServers() {
   /**
    * @server_4 가능한 모든 잘못을 저지르는 서버
    */
-  app4.get('/member', async (req, res) => {
+  app4.get('/user', async (req, res) => {
     const users = await User.find({}, {}, { limit: 2 }).lean();
     delete users[0]['email'];
     delete users[0]['pw'];
-    res.status(201).json(users);
+    res.status(201).json({ result: users });
   });
 
-  app4.get('/member/:id', async (req, res) => {
+  app4.get('/user/:id', async (req, res) => {
     const { id } = req.params;
     const user = await User.findOne({ id }).lean();
 
@@ -118,7 +120,7 @@ async function enableTestServers() {
       return res.status(404).json({ message: 'user not found' });
     }
     // status 204일경우 no-content이므로 json을 보낼 수 없다. 응답은 무조건 빈 문자열로 고정된다.
-    res.status(202).json({});
+    res.status(202).json({ result: {} });
   });
 
   app4.listen(3003, () => {
