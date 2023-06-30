@@ -4,7 +4,7 @@ const ID_NOT_EXISTS = Symbol('ID_NX');
 const LENGTH_0 = Symbol('LENGTH_0');
 
 export class ApiService {
-  private readonly userObjectKeys = ['id', 'name', 'email', 'pw'] as const;
+  private readonly userObjectKeys = ['userId', 'name', 'email', 'pw'] as const;
   async getPointToReduceAndTargetUserIdIfExistsOfGetAllUsersApi(
     url: string,
     tried = 0,
@@ -60,13 +60,15 @@ export class ApiService {
 
     isWrongElement &&
       reductionReasons.push(
-        '모든 회원 조회의 응답 본문의 각각의 회원 정보에는 id, name, email, pw가 포함되어야 합니다 (1점 감점)',
+        '모든 회원 조회의 응답 본문의 각각의 회원 정보에는 userId, name, email, pw가 포함되어야 합니다 (1점 감점)',
       );
 
     const bodyLength = responseBody?.length ?? 0;
 
     return {
-      targetUserId: bodyLength ? responseBody[0].id ?? ID_NOT_EXISTS : LENGTH_0,
+      targetUserId: bodyLength
+        ? responseBody[0].userId ?? ID_NOT_EXISTS
+        : LENGTH_0,
       allUsersPointToReduce: responseBodyExists
         ? (!isStatus200 ? 1 : 0) +
           (!isBodyLengthInAllowedRange ? 1 : 0) +
