@@ -29,36 +29,45 @@ export class CommandService implements OnModuleInit {
       .forEach(({ instance }) => {
         this.scanner
           .getAllMethodNames(Object.getPrototypeOf(instance))
-          .forEach((methodName) => {
-            const isRun = this.reflector.get(RUN, instance[methodName]);
+          .map((methodName) => instance[methodName])
+          .filter((method) => this.reflector.get(RUN, method))
+          .map((method) => ({
+            cmdArgs: this.reflector.get(method, instance),
+            pipeTransforms: this.reflector.get(TRANSFORM, method),
+            targetMethod: method.bind(instance),
+          }))
+          .map(({ targetMethod, cmdArgs, pipeTransforms }) => {
+            const parsedArgs = pipeTransforms.reduce(
+              (_: any, pipeTransform: PipeTransform) =>
+                pipeTransform.transform(this.PARSED_OPTS, {
+                  type: 'custom',
+                }),
+              this.PARSED_OPTS,
+            );
 
-            if (isRun) {
-              const pipeTransforms = this.reflector.get(
-                TRANSFORM,
-                instance[methodName],
-              );
+            return {
+              targetMethod,
+              cmdArgs,
+              parsedArgs,
+            };
+          })
+          .map(({ targetMethod, cmdArgs, parsedArgs }) => {
+            const constructedArgs = cmdArgs.reduce(
+              (cmdObj: any, cmdArg: string) => {
+                cmdObj[cmdArg] = parsedArgs[cmdArg];
 
-              const parsedArgs: any = pipeTransforms.reduce(
-                (_: any, pipeTransform: PipeTransform) =>
-                  pipeTransform.transform(this.PARSED_OPTS, {
-                    type: 'custom',
-                  }),
-                this.PARSED_OPTS,
-              );
+                return cmdObj;
+              },
+              {},
+            );
 
-              const cmdArgs = this.reflector.get(methodName, instance);
-
-              const constructedArgs = cmdArgs.reduce(
-                (cmdObj: any, cmdArg: string) => {
-                  cmdObj[cmdArg] = parsedArgs[cmdArg];
-
-                  return cmdObj;
-                },
-                {},
-              );
-
-              instance[methodName](constructedArgs);
-            }
+            return {
+              targetMethod,
+              constructedArgs,
+            };
+          })
+          .forEach(({ targetMethod, constructedArgs }) => {
+            targetMethod(constructedArgs);
           });
       });
   }

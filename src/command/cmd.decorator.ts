@@ -24,6 +24,10 @@ export const UnderCommand = applyDecorators(SetMetadata(UNDER_COMMAND, true));
 export const CommandArgs =
   (...cmdArgs: string[]) =>
   (target: Object, methodName: string | symbol, _parameterIndex: number) => {
-    Reflect.defineMetadata(methodName, cmdArgs, target);
+    Reflect.defineMetadata(
+      target[methodName as keyof typeof target],
+      cmdArgs,
+      target,
+    );
   };
 export const Cmd = CommandArgs;
