@@ -33,20 +33,18 @@ export class CommandService implements OnModuleInit {
             const isRun = this.reflector.get(RUN, instance[methodName]);
 
             if (isRun) {
-              const transforms = this.reflector.get(
+              const pipeTransforms = this.reflector.get(
                 TRANSFORM,
                 instance[methodName],
               );
 
-              const parsedArgs: any = transforms.length
-                ? transforms.reduce(
-                    (_: any, transform: PipeTransform) =>
-                      transform.transform(this.PARSED_OPTS, {
-                        type: 'custom',
-                      }),
-                    this.PARSED_OPTS,
-                  )
-                : this.PARSED_OPTS;
+              const parsedArgs: any = pipeTransforms.reduce(
+                (_: any, pipeTransform: PipeTransform) =>
+                  pipeTransform.transform(this.PARSED_OPTS, {
+                    type: 'custom',
+                  }),
+                this.PARSED_OPTS,
+              );
 
               const cmdArgs = this.reflector.get(methodName, instance);
 

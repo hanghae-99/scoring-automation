@@ -6,4 +6,4 @@
 
 # NestJS Standalone
 
-커스텀 데코레이터 & DiscoveryModule을 통해 동작하는 NestJS CLI 툴입니다.
+커스텀 데코레이터 & DiscoveryModule을 통해 동작하는 NestJS CLI 툴입니다
