@@ -7,23 +7,6 @@ import {
 } from '../types';
 
 export class XlsxService {
-  isAlgorithmRows(rows: any[]): rows is AlgorithmRow[] {
-    return !!rows[0].언어;
-  }
-  private readonly scoredAlgorithmColumns: readonly (keyof AlgorithmScoredRow)[] =
-    [
-      '타임스탬프',
-      '이름',
-      '반',
-      '언어',
-      '1번',
-      '2번',
-      '3번',
-      '문제해설영상',
-      '합격여부',
-      '틀린문제',
-      '점수',
-    ] as const;
   private readonly scoredApiColumns: readonly (keyof ApiScoredRow)[] = [
     '이름',
     '반',
@@ -31,6 +14,23 @@ export class XlsxService {
     '점수',
     '감점요인',
   ] as const;
+  private readonly algorithmColumns: readonly (keyof AlgorithmRow)[] = [
+    '타임스탬프',
+    '이름',
+    '반',
+    '언어',
+    '문제선택',
+    '문제해설영상',
+    '1번',
+    '2번',
+    '3번',
+  ];
+  private readonly scoredAlgorithmColumns: readonly (keyof AlgorithmScoredRow)[] =
+    [...this.algorithmColumns, '합격여부', '틀린문제', '점수'] as const;
+
+  isAlgorithmRows(rows: any[]): rows is AlgorithmRow[] {
+    return !!rows[0].언어;
+  }
 
   async readAnswerSheetToRows(
     file: string,
@@ -50,6 +50,11 @@ export class XlsxService {
     const [columns, ...answerRows] = rows
       .map((r) => (r.values as any[]).map((v) => (v.text ? v.text : v)))
       .map(([_, ...actual]) => actual);
+
+    this.algorithmColumns.forEach((col) => {
+      if (!columns.includes(col))
+        throw new Error(`답안에 ${col} 열이 없습니다`);
+    });
 
     const parsed = answerRows.reduce<Record<string, any>[]>((parsed, row) => {
       const rowObj = columns.reduce((rowObj, column, i) => {

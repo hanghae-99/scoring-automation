@@ -20,6 +20,8 @@ export class ScoreService {
     code: string,
     argsArr: any[][],
     answers: any[],
+    answerIdx: number,
+    questionIdx: number,
   ) {
     if (language !== 'Java' && language !== 'JavaScript')
       throw new Error('주특기를 올바르게 입력해주세요');
@@ -30,7 +32,7 @@ export class ScoreService {
         : this.JSService.executeJSOnEachArgs;
 
     return this.matchResultsWithAnswers(
-      targetAlgorithm(code, argsArr),
+      targetAlgorithm(code, argsArr, answerIdx, questionIdx),
       answers,
     );
   }

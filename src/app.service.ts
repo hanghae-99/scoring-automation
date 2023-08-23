@@ -26,47 +26,55 @@ export class AppService {
       await this.xlsxService.readAnswerSheetToRows(cmd.file, cmd.sheet);
 
     if (cmd.test === 'alg' && this.xlsxService.isAlgorithmRows(answerRows)) {
-      const scoredRows: AlgorithmScoredRow[] = answerRows.map((answerRow) => {
-        const { 언어 } = answerRow;
-
-        const scoreAndFailReason = (['1번', '2번', '3번'] as const).reduce(
-          (scoreAndFailReason, question) => {
-            const { argsArr, correctAnswers, point } = algTestCase[question];
-            const 답안 = answerRow[question];
-
-            if (!언어 || !답안) return scoreAndFailReason;
-
-            const score = this.scoreService.scoreAlgorithm(
-              언어,
-              답안.replace(/&apos;/g, "'"),
-              argsArr,
-              correctAnswers,
+      const scoredRows: AlgorithmScoredRow[] = answerRows.map(
+        (answerRow, answerIdx) => {
+          const { 언어 } = answerRow;
+          if (!언어)
+            throw new Error(
+              `${answerIdx + 1} 번 답안에 언어가 미표기되어있습니다`,
             );
 
-            score === 100
-              ? (scoreAndFailReason.totalScore += point)
-              : scoreAndFailReason.틀린문제.push({
-                  문제: question,
-                  점수: score,
-                });
+          const scoreAndFailReason = (['1번', '2번', '3번'] as const).reduce(
+            (scoreAndFailReason, question, questionIdx) => {
+              const { argsArr, correctAnswers, point } = algTestCase[question];
+              const userCode = answerRow[question];
 
-            return scoreAndFailReason;
-          },
-          {
-            totalScore: 0,
-            틀린문제: [],
-          },
-        );
+              if (!userCode) return scoreAndFailReason;
 
-        return {
-          ...answerRow,
-          점수: scoreAndFailReason.totalScore,
-          합격여부: scoreAndFailReason.totalScore >= 3,
-          틀린문제: scoreAndFailReason.틀린문제
-            .map((fq) => `문제: ${fq.문제}\n점수: ${fq.점수}`)
-            .join('\n\n'),
-        };
-      });
+              const score = this.scoreService.scoreAlgorithm(
+                언어,
+                userCode.replace(/&apos;/g, "'"),
+                argsArr,
+                correctAnswers,
+                answerIdx,
+                questionIdx,
+              );
+
+              score === 100
+                ? (scoreAndFailReason.totalScore += point)
+                : scoreAndFailReason.틀린문제.push({
+                    문제: question,
+                    점수: score,
+                  });
+
+              return scoreAndFailReason;
+            },
+            {
+              totalScore: 0,
+              틀린문제: [],
+            },
+          );
+
+          return {
+            ...answerRow,
+            점수: scoreAndFailReason.totalScore,
+            합격여부: scoreAndFailReason.totalScore >= 3,
+            틀린문제: scoreAndFailReason.틀린문제
+              .map((fq) => `문제: ${fq.문제}\n점수: ${fq.점수}`)
+              .join('\n\n'),
+          };
+        },
+      );
 
       await this.xlsxService.writeScoreSheetFromRows(
         workBook,
