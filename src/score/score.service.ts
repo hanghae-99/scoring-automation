@@ -96,7 +96,7 @@ export class ScoreService {
         if (!(e instanceof AssertionError)) console.error(e);
         else
           console.log(
-            `❌ ${answerIdx + 1}번 제출 답안 ${questionIdx + 1}번 문제 ${
+            `❌ ${answerIdx + 1}번 제출답안 ${questionIdx + 1}번 문제 ${
               i + 1
             }번 케이스 오답: ${JSON.stringify(result)} !== ${JSON.stringify(
               answers[i],
