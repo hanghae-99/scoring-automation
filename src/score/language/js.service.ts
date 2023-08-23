@@ -13,7 +13,7 @@ export class JavascriptService {
       new Script(userCode);
     } catch (e: any) {
       console.error(
-        `${alarmPrefix} 문법 오류: 🙅🏻‍♀️ ${e.message ? e.message : e}`,
+        `🙅🏻‍♀️ ${alarmPrefix} 문법 오류: ${e.message ? e.message : e}`,
       );
     }
 
@@ -29,11 +29,11 @@ export class JavascriptService {
         );
       } catch (e: any) {
         console.error(
-          `${alarmPrefix} ${i + 1}번 케이스 에러 발생: ${
+          `🚨 ${alarmPrefix} ${i + 1}번 케이스 에러 발생: ${
             e.message
               ? e.message === 'solution is not defined'
-                ? '📋 solution 함수가 발견되지 않았습니다.'
-                : `🚨 ${e.message}`
+                ? 'solution 함수가 발견되지 않았습니다.'
+                : ` ${e.message}`
               : e
           }`,
         );
