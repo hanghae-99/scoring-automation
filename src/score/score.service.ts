@@ -5,6 +5,7 @@ import { JavascriptService } from './language/js.service';
 import axios from 'axios';
 import { URL } from 'node:url';
 import { ApiService } from './api/api.service';
+import { AssertionError, deepEqual } from 'node:assert';
 
 @Injectable()
 export class ScoreService {
@@ -34,6 +35,8 @@ export class ScoreService {
     return this.matchResultsWithAnswers(
       targetAlgorithm(code, argsArr, answerIdx, questionIdx),
       answers,
+      answerIdx,
+      questionIdx,
     );
   }
 
@@ -79,11 +82,29 @@ export class ScoreService {
     };
   }
 
-  private matchResultsWithAnswers(results: any[], answers: any[]) {
-    const correctAnswers = results.reduce(
-      (score, result, i) => (result === answers[i] ? score + 1 : score),
-      0,
-    );
+  private matchResultsWithAnswers(
+    results: any[],
+    answers: any[],
+    answerIdx: number,
+    questionIdx: number,
+  ) {
+    const correctAnswers = results.reduce((score, result, i) => {
+      try {
+        deepEqual(result, answers[i]);
+        return score + 1;
+      } catch (e) {
+        if (!(e instanceof AssertionError)) console.error(e);
+        else
+          console.log(
+            `❌ ${answerIdx + 1}번 제출 답안 ${questionIdx + 1}번 문제 ${
+              i + 1
+            }번 케이스 오답: ${JSON.stringify(result)} !== ${JSON.stringify(
+              answers[i],
+            )}`,
+          );
+        return score;
+      }
+    }, 0);
 
     return Math.floor((correctAnswers / answers.length) * 100);
   }

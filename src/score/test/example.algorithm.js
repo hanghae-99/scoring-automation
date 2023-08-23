@@ -12,7 +12,7 @@ export function solution1(uint) {
 }
 
 // 2번
-export function solution2(len) {
+export function solution(len) {
   let result = '';
   for (let i = 1; i <= +len; i++) {
     const space = ' '.repeat(len - i);
