@@ -29,7 +29,7 @@ export class JavascriptService {
         );
       } catch (e: any) {
         console.error(
-          `${alarmPrefix} ${i + 1}번 케이스 오류: ${
+          `${alarmPrefix} ${i + 1}번 케이스 에러 발생: ${
             e.message
               ? e.message === 'solution is not defined'
                 ? '📋 solution 함수가 발견되지 않았습니다.'
