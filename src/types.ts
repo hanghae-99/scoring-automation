@@ -1,4 +1,4 @@
-export type Language = 'Java' | 'JavaScript';
+export type Language = 'java' | 'javascript';
 type Scored = {
   합격여부: boolean;
   틀린문제: string;
@@ -11,9 +11,9 @@ export type AlgorithmRow = {
   언어: Language;
   문제선택: string;
   문제해설영상: string;
-  '1번': string;
-  '2번': string;
-  '3번': string;
+  '1번 문제': string;
+  '2번 문제': string;
+  '3번 문제': string;
 };
 
 export type AlgorithmScoredRow = AlgorithmRow & Scored;

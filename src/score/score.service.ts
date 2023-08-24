@@ -24,11 +24,12 @@ export class ScoreService {
     answerIdx: number,
     questionIdx: number,
   ) {
-    if (language !== 'Java' && language !== 'JavaScript')
+    const loweredLanguage = language.toLowerCase();
+    if (loweredLanguage !== 'java' && loweredLanguage !== 'javascript')
       throw new Error('주특기를 올바르게 입력해주세요');
 
     const targetAlgorithm =
-      language === 'Java'
+      loweredLanguage === 'java'
         ? this.JavaService.executeJAVAOnEachArgs
         : this.JSService.executeJSOnEachArgs;
 

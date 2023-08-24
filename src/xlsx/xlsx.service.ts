@@ -1,4 +1,4 @@
-import { CellValue, Workbook } from 'exceljs';
+import { Workbook } from 'exceljs';
 import {
   AlgorithmRow,
   AlgorithmScoredRow,
@@ -15,15 +15,11 @@ export class XlsxService {
     '감점요인',
   ] as const;
   private readonly algorithmColumns: readonly (keyof AlgorithmRow)[] = [
-    '타임스탬프',
     '이름',
-    '반',
     '언어',
-    '문제선택',
-    '문제해설영상',
-    '1번',
-    '2번',
-    '3번',
+    '1번 문제',
+    '2번 문제',
+    '3번 문제',
   ];
   private readonly scoredAlgorithmColumns: readonly (keyof AlgorithmScoredRow)[] =
     [...this.algorithmColumns, '합격여부', '틀린문제', '점수'] as const;

@@ -34,7 +34,9 @@ export class AppService {
               `${answerIdx + 1} 번 답안에 언어가 미표기되어있습니다`,
             );
 
-          const scoreAndFailReason = (['1번', '2번', '3번'] as const).reduce(
+          const scoreAndFailReason = (
+            ['1번 문제', '2번 문제', '3번 문제'] as const
+          ).reduce(
             (scoreAndFailReason, question, questionIdx) => {
               const { argsArr, correctAnswers, point } = algTestCase[question];
               const userCode = answerRow[question];
