@@ -3,7 +3,7 @@ import { ArgumentsValidator } from './validator/args.validator';
 import { XlsxService } from './xlsx/xlsx.service';
 import { ScoreService } from './score/score.service';
 import { algTestCase } from './score/resource/test_case/algorithm/AlgTestCase';
-import { AlgorithmScoredRow, ApiRow, ApiScoredRow } from './types';
+import { AlgorithmScoredRow, ApiScoredRow } from './types';
 
 @UnderCommand
 export class AppService {

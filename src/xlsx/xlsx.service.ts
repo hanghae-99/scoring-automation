@@ -44,7 +44,15 @@ export class XlsxService {
       );
 
     const [columns, ...answerRows] = rows
-      .map((r) => (r.values as any[]).map((v) => (v.text ? v.text : v)))
+      .map((r) =>
+        (r.values as any[]).map((v) =>
+          v.text
+            ? v.text
+            : v.richText
+            ? v.richText.map(({ text }: any) => text).join('')
+            : v,
+        ),
+      )
       .map(([_, ...actual]) => actual);
 
     this.algorithmColumns.forEach((col) => {
