@@ -85,13 +85,28 @@ export class ScoreService {
 
   private matchResultsWithAnswers(
     results: any[],
-    answers: any[],
+    answers: any[][],
     answerIdx: number,
     questionIdx: number,
   ) {
     const correctAnswers = results.reduce((score, result, i) => {
       try {
-        deepEqual(result, answers[i]);
+        const leastOneCorrect = answers[i].filter((answer) => {
+          try {
+            deepEqual(result, answer);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        });
+
+        if (!leastOneCorrect.length)
+          throw new AssertionError({
+            message: `최소한 하나의 답안이 일치해야 합니다: ${JSON.stringify(
+              result,
+            )} ⊄ ${JSON.stringify(answers[i])}`,
+          });
+
         return score + 1;
       } catch (e) {
         if (!(e instanceof AssertionError)) console.error(e);

@@ -41,7 +41,7 @@ export class AppService {
               const { argsArr, correctAnswers, point } = algTestCase[question];
               const userCode = answerRow[question];
 
-              if (!userCode) return scoreAndFailReason;
+              if (typeof userCode !== 'string') return scoreAndFailReason;
 
               const score = this.scoreService.scoreAlgorithm(
                 언어,
