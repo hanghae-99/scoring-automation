@@ -65,20 +65,10 @@ export class ScoreService {
     const { targetUserPointToReduce, targetUserReductionReasons } =
       await this.apiService.getPointToReduceOfTargetUserApi(url, targetUserId);
 
-    const {
-      exceptionHandlingPointToReduce,
-      exceptionHandlingReductionReasons,
-    } = await this.apiService.getPointToReduceOfExceptionHandling(url);
-
     return {
-      score:
-        startPoint -
-        (allUsersPointToReduce +
-          targetUserPointToReduce +
-          exceptionHandlingPointToReduce),
+      score: startPoint - (allUsersPointToReduce + targetUserPointToReduce),
       reductionReasons: allUsersReductionReasons
         .concat(targetUserReductionReasons)
-        .concat(exceptionHandlingReductionReasons)
         .join('\n'),
     };
   }

@@ -45,34 +45,14 @@ export class ApiService {
         '모든 회원 조회의 응답 본문 길이가 3보다 작거나 99보다 큽니다 (1점 감점)',
       );
 
-    const isWrongElement =
-      responseBodyExists &&
-      Array.isArray(responseBody) &&
-      responseBody.reduce((isWrong: boolean, User: any) => {
-        if (isWrong) return isWrong;
-
-        return this.userObjectKeys.reduce<boolean>((isWrong, key) => {
-          if (isWrong) return isWrong;
-
-          return User[key] ? false : true;
-        }, false);
-      }, false);
-
-    isWrongElement &&
-      reductionReasons.push(
-        '모든 회원 조회의 응답 본문의 각각의 회원 정보에는 userId, name, email, pw가 포함되어야 합니다 (1점 감점)',
-      );
-
     const bodyLength = responseBody?.length ?? 0;
-
+    const indexBetween0And2 = Math.floor(Math.random() * 3);
     return {
       targetUserId: bodyLength
-        ? responseBody[0].userId ?? ID_NOT_EXISTS
+        ? responseBody[indexBetween0And2]?.userId ?? ID_NOT_EXISTS
         : LENGTH_0,
       allUsersPointToReduce: responseBodyExists
-        ? (!isStatus200 ? 1 : 0) +
-          (!isBodyLengthInAllowedRange ? 1 : 0) +
-          (isWrongElement ? 1 : 0)
+        ? (!isStatus200 ? 1 : 0) + (!isBodyLengthInAllowedRange ? 1 : 0)
         : 3,
       allUsersReductionReasons: reductionReasons,
     };
@@ -124,28 +104,6 @@ export class ApiService {
     return {
       targetUserPointToReduce: (!isStatus200 ? 1 : 0) + pointToReduce,
       targetUserReductionReasons: reductionReasons,
-    };
-  }
-
-  async getPointToReduceOfExceptionHandling(url: string) {
-    const randomString = Math.random().toString(36).substring(4);
-    const expecting_400Path = new URL(`/User/${randomString}`, url).toString();
-
-    const reductionReasons = [];
-
-    const pointToReduce = await axios
-      .get(expecting_400Path)
-      .then(({ status }) => (status !== 400 ? 1 : 0))
-      .catch((e) => (e?.response?.status !== 400 ? 1 : 0));
-
-    pointToReduce &&
-      reductionReasons.push(
-        '존재하지 않는 회원 조회의 응답 코드가 400이 아닙니다 (1점 감점)',
-      );
-
-    return {
-      exceptionHandlingPointToReduce: pointToReduce,
-      exceptionHandlingReductionReasons: reductionReasons,
     };
   }
 }

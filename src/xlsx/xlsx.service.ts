@@ -55,10 +55,10 @@ export class XlsxService {
       )
       .map(([_, ...actual]) => actual);
 
-    this.algorithmColumns.forEach((col) => {
-      if (!columns.includes(col))
-        throw new Error(`답안에 ${col} 열이 없습니다`);
-    });
+    // this.algorithmColumns.forEach((col) => {
+    //   if (!columns.includes(col))
+    //     throw new Error(`답안에 ${col} 열이 없습니다`);
+    // });
 
     const parsed = answerRows.reduce<Record<string, any>[]>((parsed, row) => {
       const rowObj = columns.reduce((rowObj, column, i) => {
