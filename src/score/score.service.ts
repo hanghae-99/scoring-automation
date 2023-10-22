@@ -41,7 +41,7 @@ export class ScoreService {
     );
   }
 
-  public async scoreApi(url: string, startPoint: number = 10) {
+  public async scoreApi(url: string, startPoint = 10) {
     try {
       const validation = new URL(url);
       if (validation.protocol !== 'http:')
