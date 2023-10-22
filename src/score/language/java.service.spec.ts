@@ -12,9 +12,7 @@ describe('JavaService', () => {
       }
     `;
     const argsArr = [['Hello'], ['World']];
-
     const result = service.executeJAVAOnEachArgs(userCode, argsArr);
-
     expect(result).toEqual(['Hello', 'World']);
   });
 });
@@ -25,48 +23,36 @@ describe('UserSolution', () => {
   it('should return correct array based on signs', () => {
     const userCode = `import java.util.Arrays;
 
-public class UserSolution {
+public class test1 {
     public int[][] solution(int[][] arr1, int[][] arr2, boolean[][] signs) {
-        int len1 = arr1.length;
-        int len2 = arr1[0].length;
-        int[][] answer = new int[len1][len2];
+        int[][] answer = new int[arr1.length][arr1[0].length];
+        for(int i = 0; i < arr1.length; i++){
+            for(int j = 0; j < arr1[i].length ; j++){
+                if(signs[i][j]){
+                    answer[i][j] = arr1[i][j] + arr2[i][j];
+                } else {
+                    answer[i][j] = (arr1[i][j] + arr2[i][j]) * -1;
+                }
 
-        for(int i=0; i<len1; i++){
-            for(int j=0; j<len2; j++){
-               int sum = arr1[i][j] + arr2[i][j];
-               answer[i][j] = signs[i][j]? sum:sum*(-1);
             }
         }
+
         return answer;
     }
 
     public static void main(String[] args) {
-        UserSolution method = new UserSolution();
+        test1 method = new test1();
         int[][] arr1 = {{5,7,1},{2,3,5}};
         int[][] arr2 = {{5,1,6},{7,5,6}};
         boolean[][] signs={{true,true,false},{false,true,false}};
         System.out.println(Arrays.deepToString(method.solution(arr1, arr2, signs)));
     }
 }`;
-    const argsArr = [
-      [
-        [
-          [1, 2],
-          [2, 3],
-        ],
-        [
-          [3, 4],
-          [5, 6],
-        ],
-        [
-          [true, true],
-          [true, false],
-        ],
-      ],
-    ];
+
+    const argsArr = [[1], [2], [3]]; // 이게 사실 필요가 없는 느낌인데
     const expectedOutput = [
-      [true, true],
-      [true, false],
+      [10, 8, -7],
+      [-9, 8, -11],
     ];
 
     const output = javaService.executeJAVAOnEachArgs(userCode, argsArr);
