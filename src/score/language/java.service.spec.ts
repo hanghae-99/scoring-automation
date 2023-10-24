@@ -6,7 +6,7 @@ describe('JavaService', () => {
   it('1번 문제(questionIndex: 0) - 덧셈과 부호변화 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
     const userCode = `public class UserSolution {
 
-    public static int[][] solution(int[][] arr1, int[][] arr2, boolean[][] signs) {
+    public int[][] solution(int[][] arr1, int[][] arr2, boolean[][] signs) {
         int rows = arr1.length;
         int cols = arr1[0].length;
         int[][] answer = new int[rows][cols];
@@ -80,7 +80,7 @@ describe('JavaService', () => {
     const userCode = \`import java.util.*;
 
 public class Main {
-    public static String[] solution(String[] arr, int n) {
+    public String[] solution(String[] arr, int n) {
         Map<String, Integer> hm = new HashMap<>();
         List<String> uniqueWords = new ArrayList<>();
 

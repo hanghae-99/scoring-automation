@@ -111,10 +111,16 @@ export const algTestCase: {
       [['banana', 'cat', 'car', 'apple', 'banana', 'banana'], 0],
       [['coke', 'water', 'glass', 'dog', 'dog', 'yogurt', 'vitamin'], 2],
     ],
+    // 원래 구조
+    // correctAnswers: [
+    //   [['car', 'bed', 'sun']],
+    //   [['apple', 'car', 'cat']],
+    //   [['glass', 'yogurt', 'coke', 'vitamin', 'water']],
+    // ],
     correctAnswers: [
-      [['car', 'bed', 'sun']],
-      [['apple', 'car', 'cat']],
-      [['glass', 'yogurt', 'coke', 'vitamin', 'water']],
+      ['car', 'bed', 'sun'],
+      ['apple', 'car', 'cat'],
+      ['glass', 'yogurt', 'coke', 'vitamin', 'water'],
     ],
     point: 3,
   },
