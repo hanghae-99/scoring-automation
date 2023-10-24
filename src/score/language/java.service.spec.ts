@@ -79,47 +79,47 @@ describe('JavaService', () => {
     expect(output).toEqual(expectedOutput);
   });
 
-  it('3번 문제 (questionIndex: 2) - 중복 단어 제거 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
-    const userCodeString = `
-    const userCode = \`import java.util.*;
+  it('중복 단어 제거 로직에 대한 올바른 코드는 테스트케이스에 대한 모범답안과 일치한다.', () => {
+    const correctUserCodeString = `
+        const userCode = \`import java.util.*;
 
-public class Main {
-    public String[] solution(String[] arr, int n) {
-        Map<String, Integer> hm = new HashMap<>();
-        List<String> uniqueWords = new ArrayList<>();
+    public class Main {
+        public String[] solution(String[] arr, int n) {
+            Map<String, Integer> hm = new HashMap<>();
+            List<String> uniqueWords = new ArrayList<>();
 
-        // 중볻단어 검사
-        for (String str : arr) {
-            hm.put(str, hm.getOrDefault(str, 0) + 1);
-        }
-
-        // 중복된 단어 전체제외
-        for (String key : hm.keySet()) {
-            if (hm.get(key) == 1) uniqueWords.add(key);
-        }
-
-        uniqueWords.sort((a, b) -> {
-            char charA = a.charAt(n);   // n벉째 단어 추출
-            char charB = b.charAt(n);   // n벉째 단어 추출
-            if (charA == charB) {       // n벉째가 같으면 일반 오름차순 정렬
-                return a.compareTo(b);
+            // 중볻단어 검사
+            for (String str : arr) {
+                hm.put(str, hm.getOrDefault(str, 0) + 1);
             }
-            return Character.compare(charA, charB);
-        });
 
-        return uniqueWords.toArray(new String[0]);
-    }
+            // 중복된 단어 전체제외
+            for (String key : hm.keySet()) {
+                if (hm.get(key) == 1) uniqueWords.add(key);
+            }
 
-    public static void main(String[] args) {
-        Main method = new Main();
-        String[] arr = {"coke", "water", "glass", "dog", "dog", "yogurt", "vitamin"};
-        int n = 2;
-        System.out.println(Arrays.toString(method.solution(arr, n)));
+            uniqueWords.sort((a, b) -> {
+                char charA = a.charAt(n);   // n벉째 단어 추출
+                char charB = b.charAt(n);   // n벉째 단어 추출
+                if (charA == charB) {       // n벉째가 같으면 일반 오름차순 정렬
+                    return a.compareTo(b);
+                }
+                return Character.compare(charA, charB);
+            });
+
+            return uniqueWords.toArray(new String[0]);
+        }
+
+        public static void main(String[] args) {
+            Main method = new Main();
+            String[] arr = {"coke", "water", "glass", "dog", "dog", "yogurt", "vitamin"};
+            int n = 2;
+            System.out.println(Arrays.toString(method.solution(arr, n)));
+        }
     }
-}
-\``;
+    \``;
     const regex = /const userCode = \`(.*?)\`/s; // The 's' flag makes . match newline
-    const match = userCodeString.match(regex);
+    const match = correctUserCodeString.match(regex);
     let userCode = '';
 
     if (match && match[1]) {
@@ -141,6 +141,69 @@ public class Main {
     console.log(`**** output: ${JSON.stringify(output)}`);
     expect(output).toEqual(expectedOutput);
   });
+  it('중복 단어 제거 로직에 대한 잘못된 코드는 테스트케이스에 대한 모범답안과 불일치한다.', () => {
+    const wrongUserCodeString = `
+    const userCode = \`import java.util.*;
+
+
+public class test3 {
+    public String[] solution(String[] arr, int n) {
+        Map<String, String> map = new TreeMap<>();
+
+        for(int i = 0; i < arr.length; i++){
+            String plus = arr[i].substring(n, n + 1);
+            int count = 0;
+            for(int j = 0; j < arr.length; j++){
+                if(arr[j] == arr[i]){
+                    count++;
+                }
+            }
+
+            if(count < 2){
+                map.put(arr[i], plus);
+            }
+        }
+
+        ArrayList<String> strList = new ArrayList<>(map.keySet());
+        Collections.sort(strList, (o1, o2) -> (map.get(o1).compareTo(map.get(o2))));
+        String[] answer = strList.toArray(new String[0]);
+
+        return answer;
+    }
+
+    public static void main(String[] args) {
+        test3 method = new test3();
+        String[] arr = {"coke", "water", "glass", "dog", "dog", "yogurt", "vitamin"};
+        int n = 2;
+        System.out.println(Arrays.toString(method.solution(arr, n)));
+    }
+}
+
+\``;
+
+    const regex = /const userCode = \`(.*?)\`/s; // The 's' flag makes . match newline
+    const match = wrongUserCodeString.match(regex);
+    let userCode = '';
+
+    if (match && match[1]) {
+      userCode = match[1];
+    }
+
+    const argsArr = [
+      [['brush', 'sun', 'brush', 'bed', 'car'], 1],
+      [['banana', 'cat', 'car', 'apple', 'banana', 'banana'], 0],
+      [['coke', 'water', 'glass', 'dog', 'dog', 'yogurt', 'vitamin'], 2],
+    ];
+    const correctOutput = [
+      ['car', 'bed', 'sun'],
+      ['apple', 'car', 'cat'],
+      ['glass', 'yogurt', 'coke', 'vitamin', 'water'],
+    ];
+
+    const output = javaService.executeJAVAOnEachArgs(userCode, argsArr, 10, 10);
+    // correctOutput과 다름을 assert
+    expect(output).not.toEqual(correctOutput);
+  });
 
   describe('getTemplate', () => {
     // 각 테스트 케이스에 대한 extractMethodInfoUsingAST 함수 모의하기
@@ -156,14 +219,14 @@ public class Main {
 
     it('int 입력과 String 출력에 대하여 IntToStringTemplate 반환하기', () => {
       // mockASTOutputIntToString를 입력으로 사용하기
-      expect(javaService.getTemplate(mockASTOutputIntToString)).toBe(
+      expect(JavaService.getTemplate(mockASTOutputIntToString)).toBe(
         IntToString,
       );
     });
 
     it('두 개의 int[][] 입력, 하나의 boolean[][] 입력 및 int[][] 출력에 대하여 TwoInt2DArrayAndBoolean2DArrayToInt2DArray 반환하기', () => {
       // mockASTOutput2DArrays를 입력으로 사용하기
-      expect(javaService.getTemplate(mockASTOutput2DArrays)).toBe(
+      expect(JavaService.getTemplate(mockASTOutput2DArrays)).toBe(
         Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray,
       );
     });

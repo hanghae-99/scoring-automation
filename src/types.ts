@@ -3,6 +3,7 @@ type Scored = {
   합격여부: boolean;
   틀린문제: string;
   점수: number;
+  실패사유: string;
 };
 export type AlgorithmRow = {
   타임스탬프: string;

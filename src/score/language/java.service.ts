@@ -27,7 +27,6 @@ export class JavaService {
     );
     const command = `echo "${userCode}" | java -jar ${jarPath}`;
     const output = execSync(command, { encoding: 'utf-8' }).trim();
-    console.log(`output from extractSolutionMethod: ${output})`);
     if (!output) {
       throw new Error('Failed to extract the solution method.');
     }
@@ -35,23 +34,37 @@ export class JavaService {
     return output;
   }
 
-  private extractMethodInfoUsingAST(userCode: string): string {
-    const jarPath = join(
-      dirname(__filename),
-      'libs',
-      'ASTAnalyzer-1.0-SNAPSHOT.jar',
-    );
-    console.log(`usercode given to ASTAnalyzer: ${userCode}`);
-    const command = `echo "${userCode}" | java -jar ${jarPath}`;
-    const output = execSync(command, { encoding: 'utf-8' }).trim();
-    console.log(
-      `[ASTAnalyzer] output from extractMethodInfoUsingAST: ${output}`,
-    );
-    if (!output) {
-      throw new Error('Failed to extract method info.');
-    }
+  private static extractMethodInfoUsingAST(userCode: string): string {
+    try {
+      const jarPath = join(
+        dirname(__filename),
+        'libs',
+        'ASTAnalyzer-1.0-SNAPSHOT.jar',
+      );
 
-    return output;
+      // 임시 파일에 사용자 코드 작성
+      const tempFilePath = join(__dirname, 'temp.java');
+      writeFileSync(tempFilePath, userCode, 'utf-8');
+
+      // Java 응용 프로그램에 임시 파일 경로를 전달
+      const command = `java -jar ${jarPath} ${tempFilePath}`;
+      const output = execSync(command, { encoding: 'utf-8' }).trim();
+
+      // 임시 파일 삭제
+      unlinkSync(tempFilePath);
+
+      if (!output) {
+        throw new Error('Failed to extract method info.');
+      }
+
+      return output;
+    } catch (error) {
+      console.error(
+        'An error occurred while extracting method info using AST:',
+        error,
+      );
+      throw error;
+    }
   }
 
   private static integrateUserCodeWithTemplate(
@@ -64,23 +77,40 @@ export class JavaService {
 
   public executeJAVAOnEachArgs(
     userCode: string,
-    // argsArr: ArgumentType[][],
     argsArr: any[],
     answerIdx: number,
     questionIdx: number,
   ): any[] {
     // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
-    const methodInfo = this.extractMethodInfoUsingAST(userCode);
-    const templateCode = this.getTemplate(methodInfo);
+    let methodInfo;
+    let templateCode;
+    try {
+      // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
+      methodInfo = JavaService.extractMethodInfoUsingAST(userCode);
+    } catch (e: any) {
+      const errorMessage = `Error extracting method info: ${e.message} `;
+      console.error(
+        `$🚨 ${errorMessage} at answerIdx: ${answerIdx}, questionIdx: ${questionIdx} \n userCode: ${userCode} \n argsArr: ${argsArr}`,
+      );
+      // 첫 요소에는 errorMessage 를 넣어서 반환한다.
+      return Array(argsArr.length).fill(errorMessage, 0, 1);
+    }
+    try {
+      templateCode = JavaService.getTemplate(methodInfo);
+    } catch (e: any) {
+      const errorMessage = `Error getting template: ${e.message}`;
+      console.error(
+        `️🚨 ${errorMessage} at answerIdx: ${answerIdx}, questionIdx: ${questionIdx} \n userCode: ${userCode} \n argsArr: ${argsArr}`,
+      );
+      return Array(argsArr.length).fill(errorMessage, 0, 1);
 
-    console.log('✅ Template Code:\n', templateCode);
+    }
 
     const integratedCode = JavaService.integrateUserCodeWithTemplate(
       userCode,
       templateCode,
     );
 
-    console.log('✅ Integrated Java Code:\n', integratedCode);
     const tempSrcFile = 'UserSolution.java';
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
 
@@ -88,11 +118,8 @@ export class JavaService {
       const jarPath = join(dirname(__filename), 'libs', 'gson-2.8.8.jar');
       execSync(`javac -cp ${jarPath} UserSolution.java`);
       return argsArr.map((args, idx) => {
-        console.log(`${idx + 1}번째 테스트 케이스`);
-        console.log(args);
         try {
           const jsonInput = JSON.stringify(args);
-          console.log('JSON Input:', jsonInput);
 
           const jarPath = join(dirname(__filename), 'libs', 'gson-2.8.8.jar');
 
@@ -107,8 +134,6 @@ export class JavaService {
 
           const stdout = child.stdout.trim(); // This contains your actual result
           const stderr = child.stderr.trim(); // This contains the logs from System.err.println
-
-          console.log(`Logs from Java App: ${stderr}`); // You can log the stderr output for debugging purposes
 
           return JSON.parse(stdout);
         } catch (e: any) {
@@ -129,14 +154,17 @@ export class JavaService {
     }
   }
 
-  getTemplate(output: string): string | undefined {
-    console.log(`output from getTemplate: ${output}`);
+  static getTemplate(output: string): string | undefined {
     const returnTypeMatch = output.match(/Return type: ([^\n]+)/);
     const parametersSectionMatch = output.match(/Parameters: \[([^\n]+)\]/);
 
     if (!returnTypeMatch || !parametersSectionMatch) {
-      console.error('Failed to parse the output.');
-      throw new Error('Failed to parse the output.');
+      console.error(
+        `[getTemplate] solution method 의 명세(리턴타입과 파라미터 타입) 추출 실패! ${output}`,
+      );
+      throw new Error(
+        `solution method 의 명세(리턴타입과 파라미터 타입) 추출 실패! ${output}`,
+      );
     }
 
     const returnType = returnTypeMatch[1].trim();
@@ -154,9 +182,6 @@ export class JavaService {
 
     const parameters = parameterTypes.join('');
     if (templateMap[returnType] && templateMap[returnType][parameters]) {
-      console.log(
-        ` ***** templateMap[returnType][parameters]: ${templateMap[returnType][parameters]}`,
-      );
       return templateMap[returnType][parameters];
     }
 

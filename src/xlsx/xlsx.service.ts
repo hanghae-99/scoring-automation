@@ -22,7 +22,13 @@ export class XlsxService {
     '3번 문제',
   ];
   private readonly scoredAlgorithmColumns: readonly (keyof AlgorithmScoredRow)[] =
-    [...this.algorithmColumns, '합격여부', '틀린문제', '점수'] as const;
+    [
+      ...this.algorithmColumns,
+      '합격여부',
+      '틀린문제',
+      '점수',
+      '실패사유',
+    ] as const;
 
   isAlgorithmRows(rows: any[]): rows is AlgorithmRow[] {
     return !!rows[0].언어;
@@ -75,7 +81,7 @@ export class XlsxService {
     workBook: Workbook,
     scoredRows: AlgorithmScoredRow[] | ApiScoredRow[],
     originalXlsxFileName: string,
-    scoredSheetName: string = '채점결과',
+    scoredSheetName = '채점결과',
   ) {
     if (!scoredRows.length) throw new Error('scored rows is empty');
 

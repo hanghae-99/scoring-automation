@@ -43,7 +43,7 @@ export class AppService {
 
               if (typeof userCode !== 'string') return scoreAndFailReason;
 
-              const score = this.scoreService.scoreAlgorithm(
+              const { score, errorMessages } = this.scoreService.scoreAlgorithm(
                 언어,
                 userCode.replace(/&apos;/g, "'"),
                 argsArr,
@@ -57,6 +57,7 @@ export class AppService {
                 : scoreAndFailReason.틀린문제.push({
                     문제: question,
                     점수: score,
+                    실패사유: errorMessages.join('\n'),
                   });
 
               return scoreAndFailReason;
@@ -74,16 +75,20 @@ export class AppService {
             틀린문제: scoreAndFailReason.틀린문제
               .map((fq) => `문제: ${fq.문제}\n점수: ${fq.점수}`)
               .join('\n\n'),
+            실패사유: scoreAndFailReason.틀린문제
+              .map((fq) => fq.실패사유)
+              .join('\n\n'),
           };
         },
       );
-
+      // console.log(`**** scoredRows: ${JSON.stringify(scoredRows)}`);
       await this.xlsxService.writeScoreSheetFromRows(
         workBook,
         scoredRows,
         cmd.file,
         '채점결과시트',
       );
+      console.log(`**** writeScoreSheetFromRows done`);
     }
 
     if (cmd.test === 'api' && !this.xlsxService.isAlgorithmRows(answerRows)) {

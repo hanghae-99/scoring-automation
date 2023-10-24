@@ -78,7 +78,9 @@ export class ScoreService {
     answers: any[][],
     answerIdx: number,
     questionIdx: number,
-  ) {
+  ): { score: number; errorMessages: string[] } {
+    const errorMessages: string[] = [];
+
     const correctAnswers = results.reduce((score, result, i) => {
       try {
         const leastOneCorrect = answers[i].filter((answer) => {
@@ -99,19 +101,20 @@ export class ScoreService {
 
         return score + 1;
       } catch (e) {
+        const errorMessage = `[${questionIdx + 1}번 문제] - ${
+          i + 1
+        }번 케이스 오답: (유저)${JSON.stringify(
+          result,
+        )} ⊄ (모범결과)${JSON.stringify(answers[i])}`;
+        errorMessages.push(errorMessage);
+
         if (!(e instanceof AssertionError)) console.error(e);
-        else
-          console.log(
-            `❌ ${answerIdx + 1}번 제출답안 ${questionIdx + 1}번 문제 ${
-              i + 1
-            }번 케이스 오답: ${JSON.stringify(result)} !== ${JSON.stringify(
-              answers[i],
-            )}`,
-          );
+        else console.log(`❗️${answerIdx + 2} 행 유저) ${errorMessage}`);
         return score;
       }
     }, 0);
 
-    return Math.floor((correctAnswers / answers.length) * 100);
+    const score = Math.floor((correctAnswers / answers.length) * 100);
+    return { score, errorMessages };
   }
 }
