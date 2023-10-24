@@ -1,7 +1,10 @@
 import { execSync, spawnSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
-import { MATRIX_OPERATION_TEMPLATE } from './java.templates';
+import {
+  MATRIX_OPERATION_TEMPLATE,
+  REMOVE_DUPLICATES_WORDS_TEMPLATE,
+} from './java.templates';
 type SimpleType = number | string | boolean;
 type ArgumentType = SimpleType[] | SimpleType[][];
 
@@ -33,6 +36,9 @@ export class JavaService {
       case 'MATRIX_OPERATION':
         template = MATRIX_OPERATION_TEMPLATE;
         break;
+      case 'REMOVE_DUPLICATES_WORDS_TEMPLATE':
+        template = REMOVE_DUPLICATES_WORDS_TEMPLATE;
+        break;
       default:
         throw new Error('유효하지 않은 템플릿 유형입니다.');
     }
@@ -42,7 +48,8 @@ export class JavaService {
 
   public executeJAVAOnEachArgs(
     userCode: string,
-    argsArr: ArgumentType[][],
+    // argsArr: ArgumentType[][],
+    argsArr: any[],
     answerIdx: number,
     questionIdx: number,
   ): any[] {
@@ -54,7 +61,7 @@ export class JavaService {
         templateType = 'MATRIX_OPERATION';
         break;
       case 2:
-        templateType = 'MATRIX_OPERATION';
+        templateType = 'REMOVE_DUPLICATES_WORDS_TEMPLATE';
         break;
       default:
         console.error(`유효하지 않은 questionIdx: ${questionIdx}`);
@@ -77,6 +84,8 @@ export class JavaService {
         console.log(args);
         try {
           const jsonInput = JSON.stringify(args);
+          console.log('JSON Input:', jsonInput);
+
           const jarPath = join(dirname(__filename), 'libs', 'gson-2.8.8.jar');
 
           // Use spawnSync instead of execSync to better handle both stdout and stderr

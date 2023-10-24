@@ -41,3 +41,31 @@ public class UserSolution {
 
 }
 `;
+
+export const REMOVE_DUPLICATES_WORDS_TEMPLATE = `
+import java.util.*;
+import com.google.gson.Gson;
+
+  public class UserSolution {
+      PLACEHOLDER
+  
+     public static void main(String[] args) {
+      System.err.println("main 메서드가 시작되었습니다.");
+      System.err.println("JSON 입력 확인: " + args[0]);
+  
+      Gson gson = new Gson();
+      List<Object> inputList = gson.fromJson(args[0], List.class);
+  
+      // 첫 번째 원소를 List<String>으로 변환
+      List<String> arrList = (List<String>) inputList.get(0);
+      String[] arr = arrList.toArray(new String[0]);
+  
+      // 두 번째 원소를 Double로 변환한 후 int로 변환
+      Double nAsDouble = (Double) inputList.get(1);
+      int n = nAsDouble.intValue();
+  
+      String[] result = solution(arr, n);
+      System.out.print(gson.toJson(result));
+  }
+}
+`;
