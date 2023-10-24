@@ -2,9 +2,19 @@ import { execSync, spawnSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
 import {
-  MATRIX_OPERATION_TEMPLATE,
-  REMOVE_DUPLICATES_WORDS_TEMPLATE,
+  Int1DArrayAndInt1DArrayToInt,
+  Int1DArrayToString,
+  Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray,
+  IntAndChar2DArrayToChar2DArray,
+  IntAndIntToString,
+  IntToInt,
+  IntToString,
+  String1DArrayAndIntToString1DArray,
+  StringToInt,
+  StringToString,
+  templateMap,
 } from './java.templates';
+
 type SimpleType = number | string | boolean;
 type ArgumentType = SimpleType[] | SimpleType[][];
 
@@ -25,25 +35,31 @@ export class JavaService {
     return output;
   }
 
-  private static integrateUserCodeWithTemplate(
-    userCode: string,
-    templateType: string,
-  ): string {
-    const solutionMethodBody = this.extractSolutionMethod(userCode);
-
-    let template = '';
-    switch (templateType) {
-      case 'MATRIX_OPERATION':
-        template = MATRIX_OPERATION_TEMPLATE;
-        break;
-      case 'REMOVE_DUPLICATES_WORDS_TEMPLATE':
-        template = REMOVE_DUPLICATES_WORDS_TEMPLATE;
-        break;
-      default:
-        throw new Error('유효하지 않은 템플릿 유형입니다.');
+  private extractMethodInfoUsingAST(userCode: string): string {
+    const jarPath = join(
+      dirname(__filename),
+      'libs',
+      'ASTAnalyzer-1.0-SNAPSHOT.jar',
+    );
+    console.log(`usercode given to ASTAnalyzer: ${userCode}`);
+    const command = `echo "${userCode}" | java -jar ${jarPath}`;
+    const output = execSync(command, { encoding: 'utf-8' }).trim();
+    console.log(
+      `[ASTAnalyzer] output from extractMethodInfoUsingAST: ${output}`,
+    );
+    if (!output) {
+      throw new Error('Failed to extract method info.');
     }
 
-    return template.replace('PLACEHOLDER', solutionMethodBody);
+    return output;
+  }
+
+  private static integrateUserCodeWithTemplate(
+    userCode: string,
+    templateCode: string,
+  ): string {
+    const solutionMethodBody = this.extractSolutionMethod(userCode);
+    return templateCode.replace('PLACEHOLDER', solutionMethodBody);
   }
 
   public executeJAVAOnEachArgs(
@@ -53,25 +69,17 @@ export class JavaService {
     answerIdx: number,
     questionIdx: number,
   ): any[] {
-    // answerIdx (? 또는 questionIdx) 에 따라 templateType 을 결정
-    console.log(`answerIdx: ${answerIdx}, questionIdx: ${questionIdx}`);
-    let templateType = '';
-    switch (questionIdx) {
-      case 0:
-        templateType = 'MATRIX_OPERATION';
-        break;
-      case 2:
-        templateType = 'REMOVE_DUPLICATES_WORDS_TEMPLATE';
-        break;
-      default:
-        console.error(`유효하지 않은 questionIdx: ${questionIdx}`);
-        return;
-    }
+    // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
+    const methodInfo = this.extractMethodInfoUsingAST(userCode);
+    const templateCode = this.getTemplate(methodInfo);
+
+    console.log('✅ Template Code:\n', templateCode);
 
     const integratedCode = JavaService.integrateUserCodeWithTemplate(
       userCode,
-      templateType,
+      templateCode,
     );
+
     console.log('✅ Integrated Java Code:\n', integratedCode);
     const tempSrcFile = 'UserSolution.java';
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
@@ -119,5 +127,39 @@ export class JavaService {
         console.log('Failed to remove UserSolution.class');
       }
     }
+  }
+
+  getTemplate(output: string): string | undefined {
+    console.log(`output from getTemplate: ${output}`);
+    const returnTypeMatch = output.match(/Return type: ([^\n]+)/);
+    const parametersSectionMatch = output.match(/Parameters: \[([^\n]+)\]/);
+
+    if (!returnTypeMatch || !parametersSectionMatch) {
+      console.error('Failed to parse the output.');
+      throw new Error('Failed to parse the output.');
+    }
+
+    const returnType = returnTypeMatch[1].trim();
+    const parameterTypesMatches =
+      parametersSectionMatch[1].match(/(\w+(\[\])*)/g) || [];
+
+    if (parameterTypesMatches.length === 0) {
+      console.error('Failed to extract parameter types.');
+      throw new Error('Failed to extract parameter types.');
+    }
+
+    const parameterTypes = parameterTypesMatches.filter(
+      (type, index) => index % 2 === 0,
+    );
+
+    const parameters = parameterTypes.join('');
+    if (templateMap[returnType] && templateMap[returnType][parameters]) {
+      console.log(
+        ` ***** templateMap[returnType][parameters]: ${templateMap[returnType][parameters]}`,
+      );
+      return templateMap[returnType][parameters];
+    }
+
+    return undefined; // Return undefined if no matching template is found
   }
 }

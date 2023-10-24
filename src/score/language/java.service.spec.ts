@@ -1,4 +1,8 @@
 import { JavaService } from './java.service';
+import {
+  Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray,
+  IntToString,
+} from './java.templates';
 
 describe('JavaService', () => {
   const javaService = new JavaService();
@@ -136,5 +140,32 @@ public class Main {
     const output = javaService.executeJAVAOnEachArgs(userCode, argsArr, 2, 2);
     console.log(`**** output: ${JSON.stringify(output)}`);
     expect(output).toEqual(expectedOutput);
+  });
+
+  describe('getTemplate', () => {
+    // 각 테스트 케이스에 대한 extractMethodInfoUsingAST 함수 모의하기
+    const mockASTOutputIntToString = `
+    Found method 'solution'.
+    Return type: String
+    Parameters: [int input]`;
+
+    const mockASTOutput2DArrays = `
+    Found method 'solution'.
+    Return type: int[][]
+    Parameters: [int[][] arr1, int[][] arr2, boolean[][] signs]`;
+
+    it('int 입력과 String 출력에 대하여 IntToStringTemplate 반환하기', () => {
+      // mockASTOutputIntToString를 입력으로 사용하기
+      expect(javaService.getTemplate(mockASTOutputIntToString)).toBe(
+        IntToString,
+      );
+    });
+
+    it('두 개의 int[][] 입력, 하나의 boolean[][] 입력 및 int[][] 출력에 대하여 TwoInt2DArrayAndBoolean2DArrayToInt2DArray 반환하기', () => {
+      // mockASTOutput2DArrays를 입력으로 사용하기
+      expect(javaService.getTemplate(mockASTOutput2DArrays)).toBe(
+        Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray,
+      );
+    });
   });
 });
