@@ -1,54 +1,11 @@
 import { execSync, spawnSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
+import { MATRIX_OPERATION_TEMPLATE } from './java.templates';
 type SimpleType = number | string | boolean;
 type ArgumentType = SimpleType[] | SimpleType[][];
 
 export class JavaService {
-  private static MATRIX_OPERATION_TEMPLATE = `
-import java.util.*;
-import com.google.gson.Gson;
-
-public class UserSolution {
-    PLACEHOLDER
-
-    public static void main(String[] args) {
-        // Deserialize the JSON input
-        Gson gson = new Gson();
-        List<List<List<Object>>> input = gson.fromJson(args[0], List.class);
-
-        int[][] arr1 = convertToInt2DArray(input.get(0));
-        int[][] arr2 = convertToInt2DArray(input.get(1));
-        boolean[][] signs = convertToBoolean2DArray(input.get(2));
-
-        int[][] result = solution(arr1, arr2, signs);
-        System.out.print(Arrays.deepToString(result));
-    }
-
-    private static int[][] convertToInt2DArray(List<List<Object>> input) {
-        int[][] output = new int[input.size()][];
-        for (int i = 0; i < input.size(); i++) {
-            output[i] = input.get(i).stream().mapToInt(num -> ((Double) num).intValue()).toArray();
-        }
-        return output;
-    }
-
-    private static boolean[][] convertToBoolean2DArray(List<List<Object>> input) {
-        boolean[][] output = new boolean[input.size()][];
-        for (int i = 0; i < input.size(); i++) {
-            List<Object> row = input.get(i);
-            boolean[] boolRow = new boolean[row.size()];
-            for (int j = 0; j < row.size(); j++) {
-                boolRow[j] = (Boolean) row.get(j);
-            }
-            output[i] = boolRow;
-        }
-    return output;
-}
-
-}
-`;
-
   private static extractSolutionMethod(userCode: string): string {
     const jarPath = join(
       dirname(__filename),
@@ -74,7 +31,7 @@ public class UserSolution {
     let template = '';
     switch (templateType) {
       case 'MATRIX_OPERATION':
-        template = this.MATRIX_OPERATION_TEMPLATE;
+        template = MATRIX_OPERATION_TEMPLATE;
         break;
       default:
         throw new Error('유효하지 않은 템플릿 유형입니다.');
@@ -83,39 +40,26 @@ public class UserSolution {
     return template.replace('PLACEHOLDER', solutionMethodBody);
   }
 
-  // private static integrateUserCodeWithTemplate(
-  //   userCode: string,
-  //   templateType: string,
-  // ): string {
-  //   console.log(`(1) userCode: ${userCode}`);
-  //   const solutionMethodBodyMatch = userCode.match(
-  //     /public static int\[\]\[\] solution\(.+\) \{([\s\S]+?)\}/,
-  //   );
-  //   console.log(`(2) solutionMethodBodyMatch: ${solutionMethodBodyMatch}`);
-  //   const solutionMethodMatch = solutionMethodBodyMatch[1];
-  //   console.log(`(3) solutionMethodMatch: ${solutionMethodMatch}`);
-  //
-  //   if (!solutionMethodMatch) {
-  //     throw new Error('유효한 solution 메서드를 찾을 수 없습니다.');
-  //   }
-  //   let template = '';
-  //   switch (templateType) {
-  //     case 'MATRIX_OPERATION':
-  //       template = this.MATRIX_OPERATION_TEMPLATE;
-  //       break;
-  //     default:
-  //       throw new Error('유효하지 않은 템플릿 유형입니다.');
-  //   }
-  //
-  //   return template.replace('PLACEHOLDER', solutionMethodMatch);
-  // }
-
   public executeJAVAOnEachArgs(
     userCode: string,
     argsArr: ArgumentType[][],
-    templateType: string,
+    answerIdx: number,
+    questionIdx: number,
   ): any[] {
-    console.log(`argsArr: ${JSON.stringify(argsArr)}`);
+    // answerIdx (? 또는 questionIdx) 에 따라 templateType 을 결정
+    console.log(`answerIdx: ${answerIdx}, questionIdx: ${questionIdx}`);
+    let templateType = '';
+    switch (questionIdx) {
+      case 0:
+        templateType = 'MATRIX_OPERATION';
+        break;
+      case 2:
+        templateType = 'MATRIX_OPERATION';
+        break;
+      default:
+        console.error(`유효하지 않은 questionIdx: ${questionIdx}`);
+        return;
+    }
 
     const integratedCode = JavaService.integrateUserCodeWithTemplate(
       userCode,
@@ -126,8 +70,6 @@ public class UserSolution {
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
 
     try {
-      // execSync(`javac ${tempSrcFile}`);
-      // execSync(`javac -cp ./libs/gson-2.8.8.jar ${tempSrcFile}`);
       const jarPath = join(dirname(__filename), 'libs', 'gson-2.8.8.jar');
       execSync(`javac -cp ${jarPath} UserSolution.java`);
       return argsArr.map((args, idx) => {

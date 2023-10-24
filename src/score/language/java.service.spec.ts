@@ -3,8 +3,7 @@ import { JavaService } from './java.service';
 describe('JavaService', () => {
   const javaService = new JavaService();
 
-  it('1번 문제 - 덧셈과 부호변화 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
-    const AlgorithmType = 'MATRIX_OPERATION';
+  it('1번 문제(questionIndex: 0) - 덧셈과 부호변화 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
     const userCode = `public class UserSolution {
 
     public static int[][] solution(int[][] arr1, int[][] arr2, boolean[][] signs) {
@@ -71,11 +70,7 @@ describe('JavaService', () => {
       ],
     ];
 
-    const output = javaService.executeJAVAOnEachArgs(
-      userCode,
-      argsArr,
-      AlgorithmType,
-    );
+    const output = javaService.executeJAVAOnEachArgs(userCode, argsArr, 0, 0);
     console.log(`**** output: ${JSON.stringify(output)}`);
     expect(output).toEqual(expectedOutput);
   });
