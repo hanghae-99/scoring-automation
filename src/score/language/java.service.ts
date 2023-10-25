@@ -82,7 +82,6 @@ export class JavaService {
     try {
       // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
       methodInfo = JavaService.extractMethodInfoUsingAST(userCode);
-
     } catch (e: any) {
       const errorMessage = `Error extracting method info: ${e.message} `;
       // console.error(
@@ -94,7 +93,6 @@ export class JavaService {
 
     if (!methodInfo.includes('Return type')) {
       console.log(`🔥METHOD INFO: ${methodInfo}\n\nUSERCODE: ${userCode}`);
-
 
       // 첫 요소에는 invalid 한 methodInfo 를 넣어서 반환한다.
       return Array(argsArr.length).fill(methodInfo, 0, 1);
