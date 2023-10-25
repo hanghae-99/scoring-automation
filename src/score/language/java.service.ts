@@ -8,18 +8,22 @@ type ArgumentType = SimpleType[] | SimpleType[][];
 
 export class JavaService {
   private static extractSolutionMethod(userCode: string): string {
-    const jarPath = join(
-      dirname(__filename),
-      'libs',
-      'MethodExtractor-1.0-SNAPSHOT.jar',
-    );
-    const command = `echo "${userCode}" | java -jar ${jarPath}`;
-    const output = execSync(command, { encoding: 'utf-8' }).trim();
-    if (!output) {
-      throw new Error('Failed to extract the solution method.');
-    }
+    try {
+      const jarPath = join(
+        dirname(__filename),
+        'libs',
+        'MethodExtractor-1.0-SNAPSHOT.jar',
+      );
+      const command = `echo "${userCode}" | java -jar ${jarPath}`;
+      const output = execSync(command, { encoding: 'utf-8' }).trim();
+      if (!output) {
+        throw new Error('Failed to extract the solution method.');
+      }
 
-    return output;
+      return output;
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
   }
 
   private static extractMethodInfoUsingAST(userCode: string): string {
@@ -29,9 +33,20 @@ export class JavaService {
         'libs',
         'ASTAnalyzer-1.0-SNAPSHOT.jar',
       );
-      console.log(`usercode given to ASTAnalyzer: ${userCode}`);
-      const command = `echo "${userCode}" | java -jar ${jarPath}`;
+
+      // previous
+      // // console.log(`usercode given to ASTAnalyzer: ${userCode}`);
+      // const command = `echo "${userCode}" | java -jar ${jarPath}`;
+      // console.log(`✔︎ COMMAND to ASTAnalyzer :\n\n${command}\n\n=============`);
+      // const output = execSync(command, { encoding: 'utf-8' }).trim();
+
+      const tempFilePath = join(__dirname, 'temp.java');
+      writeFileSync(tempFilePath, userCode, 'utf-8');
+      const command = `java -jar ${jarPath} ${tempFilePath}`;
       const output = execSync(command, { encoding: 'utf-8' }).trim();
+      // Don't forget to delete the temp file afterwards
+      unlinkSync(tempFilePath);
+
       // const jarPath = join(
       //   dirname(__filename),
       //   'libs',
@@ -66,8 +81,12 @@ export class JavaService {
     userCode: string,
     templateCode: string,
   ): string {
-    const solutionMethodBody = this.extractSolutionMethod(userCode);
-    return templateCode.replace('PLACEHOLDER', solutionMethodBody);
+    try {
+      const solutionMethodBody = this.extractSolutionMethod(userCode);
+      return templateCode.replace('PLACEHOLDER', solutionMethodBody);
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
   }
 
   public executeJAVAOnEachArgs(
@@ -76,9 +95,15 @@ export class JavaService {
     answerIdx: number,
     questionIdx: number,
   ): any[] {
+    if (userCode.trim() == '') {
+      const errorMessage = `제출된 userCode 가 없습니다.`;
+      return Array(argsArr.length).fill(errorMessage, 0, 1);
+    }
+
     // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
     let methodInfo;
     let templateCode;
+    let integratedCode;
     try {
       // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
       methodInfo = JavaService.extractMethodInfoUsingAST(userCode);
@@ -100,6 +125,10 @@ export class JavaService {
 
     try {
       templateCode = JavaService.getTemplate(methodInfo);
+      integratedCode = JavaService.integrateUserCodeWithTemplate(
+        userCode,
+        templateCode,
+      );
     } catch (e: any) {
       const errorMessage = `Error getting template: ${e.message}`;
       console.error(
@@ -107,11 +136,6 @@ export class JavaService {
       );
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
-
-    const integratedCode = JavaService.integrateUserCodeWithTemplate(
-      userCode,
-      templateCode,
-    );
 
     const tempSrcFile = 'UserSolution.java';
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
