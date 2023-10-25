@@ -1,6 +1,6 @@
 import { execSync, spawnSync } from 'child_process';
-import { writeFileSync, unlinkSync } from 'fs';
-import { join, dirname } from 'path';
+import { unlinkSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import { templateMap } from './java.templates';
 
 type SimpleType = number | string | boolean;
@@ -91,10 +91,9 @@ export class JavaService {
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
 
-    if (methodInfo === "Method 'solution' not found.") {
-      const errorMessage = `Error extracting method info: Method 'solution' not found. `;
-      // 첫 요소에는 errorMessage 를 넣어서 반환한다.
-      return Array(argsArr.length).fill(errorMessage, 0, 1);
+    if (!methodInfo.includes('Return type')) {
+      // 첫 요소에는 invalid 한 methodInfo 를 넣어서 반환한다.
+      return Array(argsArr.length).fill(methodInfo, 0, 1);
     }
 
     try {
@@ -184,8 +183,8 @@ export class JavaService {
     const parameters = parameterTypes.join('');
     if (templateMap[returnType] && templateMap[returnType][parameters]) {
       return templateMap[returnType][parameters];
+    } else {
+      throw new Error(`template not found with method info output: ${output}`);
     }
-
-    return undefined; // Return undefined if no matching template is found
   }
 }
