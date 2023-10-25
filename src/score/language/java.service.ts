@@ -146,7 +146,7 @@ export class JavaService {
       );
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
-
+    console.log(`🔥INTEGRATED CODE: ${integratedCode}`);
     const tempSrcFile = 'UserSolution.java';
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
 
@@ -169,8 +169,9 @@ export class JavaService {
           );
 
           const stdout = child.stdout.trim(); // This contains your actual result
+          console.log(`stdout: ${stdout}`);
           const stderr = child.stderr.trim(); // This contains the logs from System.err.println
-
+          console.log(`🔥stderr: ${stderr}`);
           return JSON.parse(stdout);
         } catch (e: any) {
           console.error(`테스트 케이스 ${idx + 1}에서 오류 발생: ${e.message}`);

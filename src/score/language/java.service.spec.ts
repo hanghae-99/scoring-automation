@@ -7,7 +7,7 @@ import {
 describe('JavaService', () => {
   const javaService = new JavaService();
 
-  it('1번 문제(questionIndex: 0) - 덧셈과 부호변화 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
+  it('덧셈과 부호변화 로직에 대한 코드를 올바르게 실행할 수 있다.', () => {
     const userCode = `public class UserSolution {
 
     public int[][] solution(int[][] arr1, int[][] arr2, boolean[][] signs) {
@@ -203,6 +203,99 @@ public class test3 {
     const output = javaService.executeJAVAOnEachArgs(userCode, argsArr, 10, 10);
     // correctOutput과 다름을 assert
     expect(output).not.toEqual(correctOutput);
+  });
+
+  it('-에 대한 코드를 올바르게 실행할 수 있다.', () => {
+    const userCode1 = `
+import java.lang.reflect.Array;
+import java.util.*;
+
+public class Main {
+
+    public int solution(int num) {
+        int moneyReturn = 1000-num;
+        // 거스름돈 선언
+        int obeak = 0;
+        int beak = 0;
+        int osib = 0;
+        int sib = 0;
+
+        obeak = moneyReturn / 500;
+        // 400원이면 500으로 나눈 나머지를 100으로 나눈 몫을 beak에 return
+        // 100원부터 % 연산을하고 나누기 연산을 하면 거스름돈 개수가 가장 적게 잔돈을 줄 수 있음
+        beak = moneyReturn %500 / 100;
+        osib = moneyReturn %500 %100 / 50;
+        sib = moneyReturn %500 %100 %50 / 10;
+        // 거스름돈 최종개수
+        int answer = obeak+beak+osib+sib;
+
+        return answer;
+    }
+
+    public static void main(String[] args) {
+
+        Main method = new Main();
+        int N =550;
+        System.out.println(method.solution(N));
+    }
+}`;
+
+    const userCode2 = ``;
+
+    const argsArr = [900, 550, 320, 160];
+    const expectedOutput = [1, 5, 6, 8];
+
+    const output = javaService.executeJAVAOnEachArgs(userCode1, argsArr, 0, 0);
+    expect(output).toEqual(expectedOutput);
+  });
+  it('테스트2 에 대한 코드를 올바르게 실행할 수 있다.', () => {
+    const userCode1 = `class Main2 {
+    public int solution(String s) {
+        int count =0;             //연속된 정답(O) 구하기
+        int sum =0;
+        int answer = 0;
+
+        for(int i=0; i<s.length();i++){
+            if(s.charAt(i)=='O'){           //s.substring(i,i+1)    처음에 이렇게 했는데 0 0 0 0 0 나온다.. 왜인지 모르겠다.
+                count+=1;
+            } else {
+                count=0;                   //다음에 x나오면 바로 0으로 초기화 시켜버림   처음에 count+=0; 했다가  128나옴..
+            }
+            sum+=count;
+//            System.out.println(sum);
+        }
+        System.out.println(sum);
+        answer=sum;
+        return answer;
+    }
+    public static void main(String[] args) {
+        Main2 method = new Main2();
+        String s = "OXOOOXXXOXOOXOOOOOXO";
+        System.out.println(method.solution(s));
+    }
+}`;
+
+    const userCode2 = ``;
+
+    const argsArr = [
+      [
+        [9, 9, 8, 8, 7, 8, 9],
+        [21, 25, 30, 29, 22, 23, 30],
+      ],
+      [
+        [9, 7, 8, 9, 7, 9, 8],
+        [23, 22, 26, 26, 29, 27, 22],
+      ],
+      [
+        [9, 9, 9, 9, 7, 9, 8],
+        [23, 23, 30, 28, 30, 23, 23],
+      ],
+    ];
+    const expectedOutput = [96, 110, 102];
+
+    const output = javaService.executeJAVAOnEachArgs(userCode1, argsArr, 0, 0);
+    console.log(`**** output: ${JSON.stringify(output)}`);
+    expect(output).toEqual(expectedOutput);
   });
 
   describe('getTemplate', () => {
