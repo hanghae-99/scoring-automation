@@ -109,10 +109,6 @@ export class JavaService {
       methodInfo = JavaService.extractMethodInfoUsingAST(userCode);
     } catch (e: any) {
       const errorMessage = `Error extracting method info: ${e.message} `;
-      // console.error(
-      //   `$🚨 ${errorMessage} at answerIdx: ${answerIdx}, questionIdx: ${questionIdx} \n userCode: ${userCode} \n argsArr: ${argsArr}`,
-      // );
-      // 첫 요소에는 errorMessage 를 넣어서 반환한다.
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
 
@@ -130,7 +126,9 @@ export class JavaService {
         templateCode,
       );
     } catch (e: any) {
-      const errorMessage = `Error getting template: ${e.message}`;
+      const errorMessage =
+        e.message ?? `Error at getTemplate and integrateUserCodeWithTemplate`;
+      // const errorMessage = `Error getting template: ${e.message}`;
       console.error(
         `️🚨 ${errorMessage} at answerIdx: ${answerIdx}, questionIdx: ${questionIdx} \n userCode: ${userCode} \n argsArr: ${argsArr}`,
       );
@@ -210,7 +208,9 @@ export class JavaService {
     if (templateMap[returnType] && templateMap[returnType][parameters]) {
       return templateMap[returnType][parameters];
     } else {
-      throw new Error(`template not found with method info output: ${output}`);
+      throw new Error(
+        `채점을 위한 템플릿 코드를 찾지 못했습니다. 제출한 코드의 형식: ${output}`,
+      );
     }
   }
 }
