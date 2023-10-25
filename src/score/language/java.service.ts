@@ -2,7 +2,7 @@ import { execSync, spawnSync } from 'child_process';
 import { unlinkSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { templateMap } from './java.templates';
-
+import { tmpdir } from 'os';
 type SimpleType = number | string | boolean;
 type ArgumentType = SimpleType[] | SimpleType[][];
 
@@ -14,15 +14,27 @@ export class JavaService {
         'libs',
         'MethodExtractor-1.0-SNAPSHOT.jar',
       );
-      const command = `echo "${userCode}" | java -jar ${jarPath}`;
+
+      // 1. Write the user code to a temporary file
+      const tempFilePath = join(tmpdir(), 'tempUserCode.java');
+      writeFileSync(tempFilePath, userCode, 'utf-8');
+
+      // 2. Execute the command to analyze the file using the JAR
+      const command = `java -jar ${jarPath} ${tempFilePath}`;
       const output = execSync(command, { encoding: 'utf-8' }).trim();
+
+      // 3. Remove the temporary file after getting the results
+      unlinkSync(tempFilePath);
+
       if (!output) {
-        throw new Error('Failed to extract the solution method.');
+        throw new Error('MethodExtractor 의 추출한 결과물이 없습니다.');
       }
 
       return output;
     } catch (e: any) {
-      throw new Error(e.message);
+      // Log the actual error for debugging purposes
+      console.error(e);
+      throw new Error(`MethodExtractor 실패! Details: ${e.message}`);
     }
   }
 
