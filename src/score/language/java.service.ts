@@ -1,19 +1,7 @@
 import { execSync, spawnSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
-import {
-  Int1DArrayAndInt1DArrayToInt,
-  Int1DArrayToString,
-  Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray,
-  IntAndChar2DArrayToChar2DArray,
-  IntAndIntToString,
-  IntToInt,
-  IntToString,
-  String1DArrayAndIntToString1DArray,
-  StringToInt,
-  StringToString,
-  templateMap,
-} from './java.templates';
+import { templateMap } from './java.templates';
 
 type SimpleType = number | string | boolean;
 type ArgumentType = SimpleType[] | SimpleType[][];
@@ -41,17 +29,24 @@ export class JavaService {
         'libs',
         'ASTAnalyzer-1.0-SNAPSHOT.jar',
       );
-
-      // 임시 파일에 사용자 코드 작성
-      const tempFilePath = join(__dirname, 'temp.java');
-      writeFileSync(tempFilePath, userCode, 'utf-8');
-
-      // Java 응용 프로그램에 임시 파일 경로를 전달
-      const command = `java -jar ${jarPath} ${tempFilePath}`;
+      console.log(`usercode given to ASTAnalyzer: ${userCode}`);
+      const command = `echo "${userCode}" | java -jar ${jarPath}`;
       const output = execSync(command, { encoding: 'utf-8' }).trim();
-
+      // const jarPath = join(
+      //   dirname(__filename),
+      //   'libs',
+      //   'ASTAnalyzer-1.0-SNAPSHOT.jar',
+      // );
+      //
+      // // 임시 파일에 사용자 코드 작성
+      // const tempFilePath = join(__dirname, 'temp.java');
+      // writeFileSync(tempFilePath, userCode, 'utf-8');
+      //
+      // // Java 응용 프로그램에 임시 파일 경로를 전달
+      // const command = `java -jar ${jarPath} ${tempFilePath}`;
+      // const output = execSync(command, { encoding: 'utf-8' }).trim();
       // 임시 파일 삭제
-      unlinkSync(tempFilePath);
+      // unlinkSync(tempFilePath);
 
       if (!output) {
         throw new Error('Failed to extract method info.');
@@ -95,6 +90,13 @@ export class JavaService {
       // 첫 요소에는 errorMessage 를 넣어서 반환한다.
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
+
+    if (methodInfo === "Method 'solution' not found.") {
+      const errorMessage = `Error extracting method info: Method 'solution' not found. `;
+      // 첫 요소에는 errorMessage 를 넣어서 반환한다.
+      return Array(argsArr.length).fill(errorMessage, 0, 1);
+    }
+
     try {
       templateCode = JavaService.getTemplate(methodInfo);
     } catch (e: any) {
@@ -103,7 +105,6 @@ export class JavaService {
         `️🚨 ${errorMessage} at answerIdx: ${answerIdx}, questionIdx: ${questionIdx} \n userCode: ${userCode} \n argsArr: ${argsArr}`,
       );
       return Array(argsArr.length).fill(errorMessage, 0, 1);
-
     }
 
     const integratedCode = JavaService.integrateUserCodeWithTemplate(
