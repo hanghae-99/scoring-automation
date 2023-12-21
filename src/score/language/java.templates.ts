@@ -202,16 +202,26 @@ public class UserSolution {
 export const Int1DArrayAndInt1DArrayToInt = `
 import java.util.*;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class UserSolution {
     PLACEHOLDER
 
     public static void main(String[] args) {
-        System.err.println("main 메서드가 시작되었습니다.");
+        System.err.println("[int1darray and int1darray] main 메서드가 시작되었습니다.");
         System.err.println("JSON 입력 확인: " + args[0]);
 
-        int[] input1 = Arrays.stream(args[0].split(",")).mapToInt(Integer::parseInt).toArray();
-        int[] input2 = Arrays.stream(args[1].split(",")).mapToInt(Integer::parseInt).toArray();
+        Gson gson = new Gson();
+
+        // Assuming args[0] contains the JSON string of the two arrays
+        List<List<Integer>> inputLists = gson.fromJson(args[0], new TypeToken<List<List<Integer>>>(){}.getType());
+        
+        // Extracting the two integer arrays from the list
+        int[] input1 = inputLists.get(0).stream().mapToInt(i -> i).toArray();
+        System.err.println("input1: " + Arrays.toString(input1));
+        int[] input2 = inputLists.get(1).stream().mapToInt(i -> i).toArray();
+        System.err.println("input2: " + Arrays.toString(input2));
+        
         UserSolution instance = new UserSolution();
         int result = instance.solution(input1, input2);
         System.out.print(new Gson().toJson(result));
@@ -219,6 +229,24 @@ public class UserSolution {
 }`;
 
 // [CASE8] input1: String, output: String
+// export const StringToString = `
+// import java.util.*;
+// import com.google.gson.Gson;
+//
+// public class UserSolution {
+//     PLACEHOLDER
+//
+//     public static void main(String[] args) {
+//         System.err.println("^0^(string to string) main 메서드가 시작되었습니다.");
+//         System.err.println("JSON 입력 확인: " + args[0]);
+//
+//         String input1 = args[0];
+//         System.err.println(" **** input1: " + input1);
+//         UserSolution instance = new UserSolution();
+//         String result = instance.solution(input1);
+//         System.out.print(new Gson().toJson(result));
+//     }
+// }`;
 export const StringToString = `
 import java.util.*;
 import com.google.gson.Gson;
@@ -227,15 +255,21 @@ public class UserSolution {
     PLACEHOLDER
 
     public static void main(String[] args) {
-        System.err.println("main 메서드가 시작되었습니다.");
+        System.err.println("^0^(string to string) main 메서드가 시작되었습니다.");
         System.err.println("JSON 입력 확인: " + args[0]);
 
-        String input1 = args[0];
+        Gson gson = new Gson();
+
+        // Parsing the JSON string to get the actual string value
+        String input1 = gson.fromJson(args[0], String.class);
+        System.err.println(" **** input1: " + input1);
+
         UserSolution instance = new UserSolution();
         String result = instance.solution(input1);
         System.out.print(new Gson().toJson(result));
     }
-}`;
+}
+`;
 
 // [CASE9] input1: int[][], input2: int[][], input3: boolean[][], output: int[][]
 export const Int2DArrayAndIntA2DrrayAndBoolean2DArrayToInt2DArray = `

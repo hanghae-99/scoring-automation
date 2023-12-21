@@ -119,6 +119,7 @@ export class JavaService {
     try {
       // userCode 내부를 확인해서, parameters 와 return type 의 명세에 따라 templateType 을 결정한다.
       methodInfo = JavaService.extractMethodInfoUsingAST(userCode);
+      console.log(`☺️ METHOD INFO: ${methodInfo}`);
     } catch (e: any) {
       const errorMessage = `Error extracting method info: ${e.message} `;
       return Array(argsArr.length).fill(errorMessage, 0, 1);
@@ -146,7 +147,7 @@ export class JavaService {
       );
       return Array(argsArr.length).fill(errorMessage, 0, 1);
     }
-    console.log(`🔥INTEGRATED CODE: ${integratedCode}`);
+    // console.log(`🔥INTEGRATED CODE: ${integratedCode}`);
     const tempSrcFile = 'UserSolution.java';
     writeFileSync(tempSrcFile, integratedCode, 'utf-8');
 
@@ -156,6 +157,7 @@ export class JavaService {
       return argsArr.map((args, idx) => {
         try {
           const jsonInput = JSON.stringify(args);
+          console.log(`^0^ jsonInput: ${jsonInput}`);
 
           const jarPath = join(dirname(__filename), 'libs', 'gson-2.8.8.jar');
 
